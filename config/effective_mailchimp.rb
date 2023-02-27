@@ -1,13 +1,13 @@
 EffectiveMailchimp.setup do |config|
-  # config.mailchimp_table_name = :mailchimp
+  # config.mailchimp_lists_table_name = :mailchimp_lists
+
   # Layout Settings
   # Configure the Layout per controller, or all at once
   # config.layout = { application: 'application', admin: 'admin' }
 
   # Mailchimp Settings
-  # Configure the class responsible for the mailchimp.
-  # This should extend from Effective::Mailchimp
-  # config.mailchimp_class_name = 'Effective::Mailchimp'
+  config.api_key = ''     # From mailchimp's /account/api/ screen
+  config.server = 'us1'   # Determine from your mailchimp account URL
 
   # Mailer Settings
   # Please see config/initializers/effective_mailchimp.rb for default effective_* gem mailer settings

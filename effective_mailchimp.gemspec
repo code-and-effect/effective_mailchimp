@@ -10,19 +10,17 @@ Gem::Specification.new do |spec|
   spec.authors     = ['Code and Effect']
   spec.email       = ['info@codeandeffect.com']
   spec.homepage    = 'https://github.com/code-and-effect/effective_mailchimp'
-  spec.summary     = 'The effective mailchimp for a new rails engine.'
-  spec.description = 'The effective mailchimp for a new rails engine.'
+  spec.summary     = 'Subscribe and unsubscribe to mailchimp lists.'
+  spec.description = 'Subscribe and unsubscribe to mailchimp lists.'
   spec.license     = 'MIT'
 
   spec.files = Dir["{app,config,db,lib}/**/*"] + ['MIT-LICENSE', 'Rakefile', 'README.md']
 
   spec.add_dependency 'rails', '>= 6.0.0'
+  spec.add_dependency 'MailchimpMarketing'
   spec.add_dependency 'effective_bootstrap'
   spec.add_dependency 'effective_datatables', '>= 4.0.0'
-  spec.add_dependency 'effective_orders'
   spec.add_dependency 'effective_resources'
-  spec.add_dependency 'effective_roles'
-  spec.add_dependency 'wicked'
 
   spec.add_development_dependency 'sqlite3'
   spec.add_development_dependency 'devise'

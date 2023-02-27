@@ -1,12 +1,8 @@
 # Effective Mailchimp
 
-The mailchimp to an effective gem.
+Subscribe and unsubscribe users to individual mailchimp campaigns.
 
-```
-cp -r effective_mailchimp effective_new_gem
-cd new_gem
-deep_rename mailchimp new_gem
-```
+Update Mailchimp whenever a user changes their demographics
 
 ## Getting Started
 
@@ -60,6 +56,23 @@ Add a link to the admin menu:
   - if can? :index, Effective::Mailchimp
     = nav_link_to 'Mailchimp', effective_mailchimp.admin_mailchimps_path
 ```
+
+## Configuring Mailchimp Account
+
+Refer to the Marketing API Quick Start
+
+`https://mailchimp.com/developer/marketing/guides/quick-start/`
+
+Sign up for a Mailchimp account. Create a campaign.
+
+Get API key:
+
+Visit `https://us7.admin.mailchimp.com/account/api/`
+Click Create an API Key
+Give it a name like Effective Mailchimp
+
+
+
 
 ## Configuration
 

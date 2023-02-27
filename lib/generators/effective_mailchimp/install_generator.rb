@@ -20,8 +20,6 @@ module EffectiveMailchimp
       end
 
       def create_migration_file
-        @mailchimp_table_name  = ':' + EffectiveMailchimp.mailchimp_table_name.to_s
-
         migration_template ('../' * 3) + 'db/migrate/01_create_effective_mailchimp.rb.erb', 'db/migrate/create_effective_mailchimp.rb'
       end
 
