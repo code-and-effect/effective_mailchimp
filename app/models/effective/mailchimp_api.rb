@@ -36,5 +36,23 @@ module Effective
       Array(response['lists']) - [nil, '', {}]
     end
 
+    def list(id)
+      client.lists.get_list(id.try(:mailchimp_id) || id)
+    end
+
+    def list_member(id, email)
+      raise('expected an email') unless email.present?
+
+      client.lists.get_list_member(id.try(:mailchimp_id) || id, email)
+    end
+
+    def subscribed?(id, email)
+      begin
+        list_member(id, email)['status'] == 'subscribed'
+      rescue MailchimpMarketing::ApiError => e
+        false # This member doesn't exist for this list
+      end
+    end
+
   end
 end
