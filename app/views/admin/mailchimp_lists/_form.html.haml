@@ -1,0 +1,8 @@
+= effective_form_with(model: [:admin, mailchimp_list], engine: true) do |f|
+  = f.static_field :mailchimp_id
+  = f.static_field :web_id
+  = f.static_field :name
+
+  = f.check_box :can_subscribe, label: 'Yes, display this list to users and allow them to opt-in'
+
+  = effective_submit(f)

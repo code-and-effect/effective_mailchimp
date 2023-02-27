@@ -6,8 +6,8 @@ EffectiveMailchimp.setup do |config|
   # config.layout = { application: 'application', admin: 'admin' }
 
   # Mailchimp Settings
-  config.api_key = ''     # From mailchimp's /account/api/ screen
-  config.server = 'us1'   # Determine from your mailchimp account URL
+  config.api_key = ''  # From mailchimp's /account/api/ screen
+  config.server = ''   # Determine from your mailchimp account URL. Something like us1
 
   # Mailer Settings
   # Please see config/initializers/effective_mailchimp.rb for default effective_* gem mailer settings

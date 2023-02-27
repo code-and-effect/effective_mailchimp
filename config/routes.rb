@@ -10,6 +10,10 @@ EffectiveMailchimp::Engine.routes.draw do
   end
 
   namespace :admin do
+    resources :mailchimp_lists, only: [:index, :edit, :update] do
+      post :can_subscribe, on: :member
+      post :cannot_subscribe, on: :member
+    end
   end
 
 end
