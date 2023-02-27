@@ -55,6 +55,10 @@ module Effective
       EffectiveMailchimp.api.admin_url + "/campaigns/#f_list:#{web_id}"
     end
 
+    def members_url
+      EffectiveMailchimp.api.admin_url + "/lists/members?id=#{web_id}"
+    end
+
     def can_subscribe!
       update!(can_subscribe: true)
     end

@@ -13,8 +13,12 @@ module Admin
       col :name
       col :can_subscribe, label: 'Users can opt-in'
 
-      col :url, label: 'Mailchimp' do |ml|
+      col :url, label: 'Campaign' do |ml|
         link_to('View Campaign', ml.url, target: '_blank')
+      end
+
+      col :members_url, label: 'Members' do |ml|
+        link_to('View Members', ml.members_url, target: '_blank')
       end
 
       actions_col

@@ -10,7 +10,7 @@ module EffectiveMailchimp
     # Include acts_as_mailchimp concern and allow any ActiveRecord object to call it
     initializer 'effective_mailchimp.active_record' do |app|
       app.config.to_prepare do
-        #ActiveRecord::Base.extend(ActsAsMailchimp::Base)
+        ActiveRecord::Base.extend(EffectiveMailchimpUser::Base)
       end
     end
 
