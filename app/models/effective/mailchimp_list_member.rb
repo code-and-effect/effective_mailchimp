@@ -5,6 +5,8 @@ module Effective
     belongs_to :user, polymorphic: true
     belongs_to :mailchimp_list
 
+    log_changes(to: :user, except: :last_synced_at) if respond_to?(:log_changes)
+
     effective_resource do
       mailchimp_id    :string
       web_id          :string
