@@ -88,10 +88,10 @@ module EffectiveMailchimpUser
     assign_attributes(mailchimp_user_form_action: nil)
 
     mailchimp_list_members.map do |member|
-      if member.subscribed? && member.mailchimp_id.blank?
+      if member.mailchimp_id.blank? && member.subscribed?
         list_member = api.list_member_add(member)
         member.assign_mailchimp_attributes(list_member)
-      elsif member.mailchimp_id.present? && (member.changes.present? || member.previous_changes.present? || force)
+      elsif member.mailchimp_id.present? && (force || mailchimp_member_update_required?(member))
         list_member = api.list_member_update(member)
         member.assign_mailchimp_attributes(list_member)
       end
@@ -99,6 +99,18 @@ module EffectiveMailchimpUser
 
     save! if mailchimp_list_members_changed?
     true
+  end
+
+  def mailchimp_member_update_required?(member)
+    require_update = ['email', 'last_name', 'first_name']
+
+    return true if (changes.keys & require_update).present?
+    return true if (previous_changes.keys & require_update).present?
+
+    return true if member.changes.present?
+    return true if member.previous_changes.present?
+
+    false
   end
 
 end

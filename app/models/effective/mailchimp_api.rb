@@ -54,8 +54,12 @@ module Effective
       raise('expected an Effective::MailchimpListMember') unless member.kind_of?(Effective::MailchimpListMember)
 
       payload = {
-        email_address: member.email,
+        email_address: member.user.email,
         status: (member.subscribed ? 'subscribed' : 'unsubscribed'),
+        merge_fields: {
+          'FNAME': member.user.try(:first_name),
+          'LNAME': member.user.try(:last_name)
+        }
       }
 
       client.lists.add_list_member(member.mailchimp_list.mailchimp_id, payload)
@@ -67,6 +71,10 @@ module Effective
       payload = {
         email_address: member.user.email,
         status: (member.subscribed ? 'subscribed' : 'unsubscribed'),
+        merge_fields: {
+          'FNAME': member.user.try(:first_name),
+          'LNAME': member.user.try(:last_name)
+        }
       }
 
       client.lists.update_list_member(member.mailchimp_list.mailchimp_id, member.email, payload)
