@@ -49,7 +49,6 @@ effective_mailchimp_user
 
 and
 
-```
 Add a link to the admin menu:
 
 ```haml
@@ -66,6 +65,7 @@ To add the fields to your existing users form
   = f.text_field :last_name
   = mailchimp_user_fields(f)
   = f.submit
+```
 
 ## Configuring Mailchimp Account
 
