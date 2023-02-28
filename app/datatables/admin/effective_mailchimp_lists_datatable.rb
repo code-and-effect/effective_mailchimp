@@ -1,5 +1,10 @@
 module Admin
   class EffectiveMailchimpListsDatatable < Effective::Datatable
+    filters do
+      scope :all
+      scope :subscribable
+    end
+
     datatable do
       order :updated_at
 
@@ -11,7 +16,7 @@ module Admin
       col :web_id, visible: false
 
       col :name
-      col :can_subscribe, label: 'Users can opt-in'
+      col :can_subscribe
 
       col :url, label: 'Campaign' do |ml|
         link_to('View Campaign', ml.url, target: '_blank')

@@ -54,7 +54,7 @@ module EffectiveMailchimpUser
 
   def mailchimp_sync_required?
     return true if mailchimp_last_synced_at.blank?
-    mailchimp_last_synced_at < (Time.zone.now - 1.hour)
+    mailchimp_last_synced_at < (Time.zone.now - 1.day)
   end
 
   # Pulls the current status from Mailchimp API into the Mailchimp List Member objects
