@@ -20,7 +20,7 @@ module Effective
     end
 
     scope :deep, -> { includes(:mailchimp_list, :user) }
-    scope :sorted, -> { order(:name) }
+    scope :sorted, -> { order(:id) }
 
     def to_s
       mailchimp_list&.to_s || model_name.human

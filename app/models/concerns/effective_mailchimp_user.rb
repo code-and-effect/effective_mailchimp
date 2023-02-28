@@ -19,10 +19,10 @@ module EffectiveMailchimpUser
   included do
     attr_accessor :mailchimp_user_form_action
 
-    has_many :mailchimp_list_members, -> { Effective::MailchimpListMember.order(:id) }, as: :user, class_name: 'Effective::MailchimpListMember', dependent: :destroy
+    has_many :mailchimp_list_members, -> { Effective::MailchimpListMember.sorted }, as: :user, class_name: 'Effective::MailchimpListMember', dependent: :destroy
     accepts_nested_attributes_for :mailchimp_list_members, allow_destroy: true
 
-    has_many :mailchimp_lists, through: :mailchimp_list_members, class_name: 'Effective::MailchimpList'
+    has_many :mailchimp_lists, -> { Effective::MailchimpList.sorted }, through: :mailchimp_list_members, class_name: 'Effective::MailchimpList'
     accepts_nested_attributes_for :mailchimp_lists, allow_destroy: true
 
     # The user updated the form
@@ -61,7 +61,7 @@ module EffectiveMailchimpUser
   # Run before the mailchimp fields are displayed
   def mailchimp_sync!(force: true)
     api = EffectiveMailchimp.api
-    lists = Effective::MailchimpList.subscribable.order(:id).to_a
+    lists = Effective::MailchimpList.subscribable.sorted.to_a
 
     return if lists.length == mailchimp_list_members.length && !(force || mailchimp_sync_required?)
 
@@ -91,7 +91,7 @@ module EffectiveMailchimpUser
       if member.subscribed? && member.mailchimp_id.blank?
         list_member = api.list_member_add(member)
         member.assign_mailchimp_attributes(list_member)
-      elsif member.mailchimp_id.present? && (member.previous_changes.present? || force)
+      elsif member.mailchimp_id.present? && (member.changes.present? || member.previous_changes.present? || force)
         list_member = api.list_member_update(member)
         member.assign_mailchimp_attributes(list_member)
       end
