@@ -20,4 +20,8 @@ module EffectiveMailchimp
     Effective::MailchimpApi.new(api_key: api_key, server: server)
   end
 
+  def self.permitted_params
+    { :mailchimp_user_form_action, mailchimp_list_members_attributes: [:id, :subscribed] }
+  end
+
 end

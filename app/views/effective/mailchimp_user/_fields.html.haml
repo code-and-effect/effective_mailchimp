@@ -1,0 +1,10 @@
+- raise('expected an effective_mailchimp_user') unless f.object.class.respond_to?(:effective_mailchimp_user?)
+
+- f.object.mailchimp_sync!
+
+%p.text-muted Please opt-in to one or more email lists
+
+= f.hidden_field :mailchimp_user_form_action, value: true
+
+= f.fields_for :mailchimp_list_members do |fmlm|
+  %p= fmlm.check_box :subscribed, label: fmlm.object.to_s

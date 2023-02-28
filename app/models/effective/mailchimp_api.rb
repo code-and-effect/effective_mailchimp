@@ -43,14 +43,10 @@ module Effective
     def list_member(id, email)
       raise('expected an email') unless email.present?
 
-      client.lists.get_list_member(id.try(:mailchimp_id) || id, email)
-    end
-
-    def subscribed?(id, email)
       begin
-        list_member(id, email)['status'] == 'subscribed'
+        client.lists.get_list_member(id.try(:mailchimp_id) || id, email)
       rescue MailchimpMarketing::ApiError => e
-        false # This member doesn't exist for this list
+        {}
       end
     end
 

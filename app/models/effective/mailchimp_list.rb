@@ -19,14 +19,12 @@ module Effective
 
     scope :deep, -> { all }
     scope :sorted, -> { order(:name) }
+    scope :subscribable, -> { where(can_subscribe: true) }
 
     # Creates or builds all the Lists
     def self.sync!
       # All the Lists from Mailchimp
       lists = EffectiveMailchimp.api.lists
-
-      # Only consider public lists
-      lists = lists.select { |list| list['visibility'] == 'pub' }
 
       # Get all our existing Effective::MailchimpList records
       mailchimp_lists = all()

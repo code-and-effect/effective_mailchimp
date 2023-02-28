@@ -72,8 +72,6 @@ Click Create an API Key
 Give it a name like Effective Mailchimp
 
 
-
-
 ## Configuration
 
 ## Authorization
