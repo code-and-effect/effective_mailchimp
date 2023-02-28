@@ -61,10 +61,25 @@ ActiveRecord::Schema[7.0].define(version: 5) do
     t.datetime "updated_at", precision: nil
   end
 
+  create_table "mailchimp_list_members", force: :cascade do |t|
+    t.integer "user_id"
+    t.string "user_type"
+    t.integer "mailchimp_list_id"
+    t.string "mailchimp_id"
+    t.string "web_id"
+    t.string "email_address"
+    t.string "full_name"
+    t.boolean "subscribed"
+    t.datetime "last_synced_at", precision: nil
+    t.datetime "created_at", precision: nil
+    t.datetime "updated_at", precision: nil
+  end
+
   create_table "mailchimp_lists", force: :cascade do |t|
     t.string "mailchimp_id"
+    t.string "web_id"
     t.string "name"
-    t.boolean "subscribable"
+    t.boolean "can_subscribe"
     t.datetime "created_at", precision: nil
     t.datetime "updated_at", precision: nil
   end

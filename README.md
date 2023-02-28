@@ -44,6 +44,7 @@ rake db:migrate
 Please add the following to your User model:
 
 ```
+effective_mailchimp_user
 ```
 
 and
@@ -53,9 +54,18 @@ Add a link to the admin menu:
 
 ```haml
 - if can? :admin, :effective_mailchimp
-  - if can? :index, Effective::Mailchimp
-    = nav_link_to 'Mailchimp', effective_mailchimp.admin_mailchimps_path
+  - if can? :index, Effective::MailchimpList
+    = nav_link_to 'Mailchimp lists', effective_mailchimp.admin_mailchimp_lists_path
 ```
+
+To add the fields to your existing users form
+
+```
+= form_with(model: user) do |f|
+  = f.text_field :first_name
+  = f.text_field :last_name
+  = mailchimp_user_fields(f)
+  = f.submit
 
 ## Configuring Mailchimp Account
 
@@ -65,27 +75,19 @@ Refer to the Marketing API Quick Start
 
 Sign up for a Mailchimp account. Create a campaign.
 
-Get API key:
+Get API key from:
 
 Visit `https://us7.admin.mailchimp.com/account/api/`
-Click Create an API Key
-Give it a name like Effective Mailchimp
 
+Click Create an API Key
+
+Get your server from the domain. us7 in the above example.
 
 ## Configuration
 
 ## Authorization
 
 All authorization checks are handled via the effective_resources gem found in the `config/initializers/effective_resources.rb` file.
-
-## Effective Roles
-
-This gem works with effective roles for the representative roles.
-
-Configure your `config/initializers/effective_roles.rb` something like this:
-
-```
-```
 
 ## Permissions
 
@@ -97,6 +99,10 @@ end
 
 if user.admin?
   can :admin, :effective_mailchimp
+
+  can([:index, :edit, :update], Effective::MailchimpList)
+  can(:can_subscribe, Effective::MailchimpList) { |list| !list.can_subscribe? }
+  can(:cannot_subscribe, Effective::MailchimpList) { |list| list.can_subscribe? }
 end
 ```
 

@@ -9,7 +9,6 @@ module EffectiveMailchimp
     [
       :mailchimp_lists_table_name, :mailchimp_list_members_table_name,
       :layout,
-      :mailer, :parent_mailer, :deliver_method, :mailer_layout, :mailer_sender, :mailer_admin, :mailer_subject, :use_effective_email_templates,
       :api_key, :server
     ]
   end
