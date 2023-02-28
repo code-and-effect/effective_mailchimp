@@ -1,0 +1,25 @@
+= card(ets(Effective::MailchimpList)) do
+  %p.text-muted #{user} is subscribed to #{pluralize(user.mailchimp_subscribed_lists.count, et(Effective::MailchimpList))}.
+
+  %p.text-muted
+    Please visit
+    = link_to 'All ' + ets(Effective::MailchimpList), effective_mailchimp.admin_mailchimp_lists_path, target: '_blank'
+    to configure which are selectable.
+
+  %p
+    %strong Subscribed
+
+  = effective_form_with model: [:admin, user] do |f|
+    = f.hidden_field :id
+    = mailchimp_user_fields(f)
+
+    %p.text-muted
+      %small
+        last synced with
+        = link_to 'Mailchimp', EffectiveMailchimp.api.admin_url
+        = time_ago_in_words(user.mailchimp_last_synced_at)
+        ago.
+        = link_to 'sync now', effective_mailchimp.mailchimp_sync_user_admin_mailchimp_path(f.object), 'data-method': :post
+
+
+    = f.submit

@@ -25,6 +25,8 @@ class CreateEffectiveMailchimp < ActiveRecord::Migration[6.0]
 
       t.boolean :subscribed
 
+      t.datetime :last_synced_at
+
       t.timestamps
     end
 

@@ -41,13 +41,35 @@ module Effective
     end
 
     def list_member(id, email)
-      raise('expected an email') unless email.present?
+      raise('expected an email') unless email.to_s.include?('@')
 
       begin
         client.lists.get_list_member(id.try(:mailchimp_id) || id, email)
       rescue MailchimpMarketing::ApiError => e
         {}
       end
+    end
+
+    def list_member_add(member)
+      raise('expected an Effective::MailchimpListMember') unless member.kind_of?(Effective::MailchimpListMember)
+
+      payload = {
+        email_address: member.email,
+        status: (member.subscribed ? 'subscribed' : 'unsubscribed'),
+      }
+
+      client.lists.add_list_member(member.mailchimp_list.mailchimp_id, payload)
+    end
+
+    def list_member_update(member)
+      raise('expected an Effective::MailchimpListMember') unless member.kind_of?(Effective::MailchimpListMember)
+
+      payload = {
+        email_address: member.user.email,
+        status: (member.subscribed ? 'subscribed' : 'unsubscribed'),
+      }
+
+      client.lists.update_list_member(member.mailchimp_list.mailchimp_id, member.email, payload)
     end
 
   end

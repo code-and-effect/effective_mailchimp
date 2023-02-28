@@ -26,9 +26,11 @@ module EffectiveMailchimpUser
     accepts_nested_attributes_for :mailchimp_lists, allow_destroy: true
 
     # The user updated the form
-    after_commit(on: :save, if: -> { mailchimp_user_form_action.present? }) do
-    end
+    after_commit(if: -> { mailchimp_user_form_action }) { mailchimp_update!(force: false) }
+  end
 
+  def mailchimp_subscribed_lists
+    mailchimp_list_members.select(&:subscribed?).map(&:mailchimp_list)
   end
 
   def mailchimp_list_member(mailchimp_list:)
@@ -42,13 +44,61 @@ module EffectiveMailchimpUser
     mailchimp_list_member(mailchimp_list: mailchimp_list) || mailchimp_list_members.build(mailchimp_list: mailchimp_list)
   end
 
-  # Pulls the current status from Mailchimp API into the Mailchimp List Member objects
-  def mailchimp_sync!
-    Effective::MailchimpListMember.sync!(user: self)
+  def mailchimp_list_members_changed?
+    mailchimp_list_members.any? { |mlm| mlm.changes.present? || mlm.marked_for_destruction? }
   end
 
-  # Sends the Mailchimp List Member objects to Mailchimp
-  def mailchimp_update!
+  def mailchimp_last_synced_at
+    mailchimp_list_members.map(&:last_synced_at).min
+  end
+
+  def mailchimp_sync_required?
+    return true if mailchimp_last_synced_at.blank?
+    mailchimp_last_synced_at < (Time.zone.now - 1.hour)
+  end
+
+  # Pulls the current status from Mailchimp API into the Mailchimp List Member objects
+  # Run before the mailchimp fields are displayed
+  def mailchimp_sync!(force: true)
+    api = EffectiveMailchimp.api
+    lists = Effective::MailchimpList.subscribable.order(:id).to_a
+
+    return if lists.length == mailchimp_list_members.length && !(force || mailchimp_sync_required?)
+
+    lists.each do |mailchimp_list|
+      member = build_mailchimp_list_member(mailchimp_list: mailchimp_list)
+
+      list_member = api.list_member(mailchimp_list, email) || {}
+      member.assign_mailchimp_attributes(list_member)
+    end
+
+    mailchimp_list_members.each do |member|
+      list = lists.find { |list| list.id == member.mailchimp_list_id }
+      member.mark_for_destruction unless list.present?
+    end
+
+    save! if mailchimp_list_members_changed?
+    true
+  end
+
+  # Pushes the current Mailchimp List Member objects to Mailchimp when needed
+  def mailchimp_update!(force: true)
+    api = EffectiveMailchimp.api
+
+    assign_attributes(mailchimp_user_form_action: nil)
+
+    mailchimp_list_members.map do |member|
+      if member.subscribed? && member.mailchimp_id.blank?
+        list_member = api.list_member_add(member)
+        member.assign_mailchimp_attributes(list_member)
+      elsif member.mailchimp_id.present? && (member.previous_changes.present? || force)
+        list_member = api.list_member_update(member)
+        member.assign_mailchimp_attributes(list_member)
+      end
+    end
+
+    save! if mailchimp_list_members_changed?
+    true
   end
 
 end

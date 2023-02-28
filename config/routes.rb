@@ -14,6 +14,11 @@ EffectiveMailchimp::Engine.routes.draw do
       post :can_subscribe, on: :member
       post :cannot_subscribe, on: :member
     end
+
+    resources :mailchimp, only: [] do
+      post :mailchimp_sync_user, on: :member
+    end
+
   end
 
 end

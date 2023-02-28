@@ -21,7 +21,7 @@ module EffectiveMailchimp
   end
 
   def self.permitted_params
-    { :mailchimp_user_form_action, mailchimp_list_members_attributes: [:id, :subscribed] }
+    [ :mailchimp_user_form_action, mailchimp_list_members_attributes: [:id, :subscribed] ]
   end
 
 end
