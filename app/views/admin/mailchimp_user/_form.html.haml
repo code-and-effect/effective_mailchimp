@@ -4,13 +4,14 @@
   %p.text-muted
     Please visit
     = link_to 'All ' + ets(Effective::MailchimpList), effective_mailchimp.admin_mailchimp_lists_path, target: '_blank'
-    to configure which lists are displayed.
+    to configure which are displayed.
 
   %p
     %strong Subscribed
 
   = effective_form_with model: [:admin, user] do |f|
     = f.hidden_field :id
+
     = mailchimp_user_fields(f)
 
     %p.text-muted
@@ -20,6 +21,5 @@
         = time_ago_in_words(user.mailchimp_last_synced_at)
         ago.
         = link_to 'sync now', effective_mailchimp.mailchimp_sync_user_admin_mailchimp_path(f.object), 'data-method': :post
-
 
     = f.submit
