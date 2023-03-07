@@ -18,8 +18,12 @@
       %small
         last synced with
         = link_to 'Mailchimp', EffectiveMailchimp.api.admin_url
-        = time_ago_in_words(user.mailchimp_last_synced_at)
-        ago.
+        - if user.mailchimp_last_synced_at.present?
+          = time_ago_in_words(user.mailchimp_last_synced_at)
+          ago.
+        - else
+          never.
+
         = link_to 'sync now', effective_mailchimp.mailchimp_sync_user_admin_mailchimp_path(f.object), 'data-method': :post
 
     = f.submit
