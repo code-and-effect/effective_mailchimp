@@ -56,6 +56,8 @@ module Effective
     end
 
     def add_merge_field(id, name:, type: :text)
+      raise("invalid mailchimp merge key: #{name}. Must be 10 or fewer characters") if name.to_s.length > 10
+
       payload = { name: name.to_s.titleize, tag: name.to_s, type: type }
 
       begin

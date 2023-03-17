@@ -35,6 +35,7 @@ module EffectiveMailchimpUser
   end
 
   # These are the fields we push to Mailchimp on list_add and list_update
+  # Keys can only be 10 characters long
   def default_mailchimp_merge_fields
     atts = {}
 
@@ -54,7 +55,7 @@ module EffectiveMailchimpUser
         'CITY': address&.city,
         'PROVINCE': address&.province,
         'COUNTRY': address&.country,
-        'POSTAL_CODE': address&.postal_code
+        'POSTALCODE': address&.postal_code
       )
     end
 
