@@ -56,7 +56,7 @@ module Effective
     end
 
     def add_merge_field(id, name:, type: :text)
-      payload = { name: name.to_s.titleize, tag: name.to_s.upcase, type: type }
+      payload = { name: name.to_s.titleize, tag: name.to_s, type: type }
 
       begin
         client.lists.add_list_merge_field(id, payload)
