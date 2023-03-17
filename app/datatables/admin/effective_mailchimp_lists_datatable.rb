@@ -17,14 +17,17 @@ module Admin
 
       col :name
       col :can_subscribe
+      col :force_subscribe
 
-      col :url, label: 'Campaign' do |ml|
-        link_to('View Campaign', ml.url, target: '_blank')
+      col :url, label: 'Mailchimp' do |ml|
+        [
+          link_to('View Campaign', ml.url, target: '_blank'),
+          link_to('View Members', ml.members_url, target: '_blank'),
+          link_to('View Merge Fields', ml.merge_fields_url, target: '_blank')
+        ].join('<br>').html_safe
       end
 
-      col :members_url, label: 'Members' do |ml|
-        link_to('View Members', ml.members_url, target: '_blank')
-      end
+      col :merge_fields
 
       actions_col
     end

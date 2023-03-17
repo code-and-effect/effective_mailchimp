@@ -13,6 +13,9 @@ EffectiveMailchimp::Engine.routes.draw do
     resources :mailchimp_lists, only: [:index, :edit, :update] do
       post :can_subscribe, on: :member
       post :cannot_subscribe, on: :member
+
+      post :force_subscribe, on: :member
+      post :unforce_subscribe, on: :member
     end
 
     resources :mailchimp, only: [] do

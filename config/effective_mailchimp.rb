@@ -8,5 +8,4 @@ EffectiveMailchimp.setup do |config|
 
   # Mailchimp Settings
   config.api_key = ''  # From mailchimp's /account/api/ screen
-  config.server = ''   # Determine from your mailchimp account URL. Something like us1
 end

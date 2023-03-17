@@ -9,18 +9,18 @@ module EffectiveMailchimp
     [
       :mailchimp_lists_table_name, :mailchimp_list_members_table_name,
       :layout,
-      :api_key, :server
+      :api_key
     ]
   end
 
   include EffectiveGem
 
   def self.api
-    Effective::MailchimpApi.new(api_key: api_key, server: server)
+    Effective::MailchimpApi.new(api_key: api_key)
   end
 
   def self.api_present?
-    api_key.present? && server.present?
+    api_key.present?
   end
 
   def self.permitted_params

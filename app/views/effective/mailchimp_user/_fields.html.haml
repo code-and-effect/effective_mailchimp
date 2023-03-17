@@ -1,4 +1,14 @@
 = f.hidden_field :mailchimp_user_form_action, value: true
 
 = f.fields_for :mailchimp_list_members do |fmlm|
-  %p= fmlm.check_box :subscribed, label: fmlm.object.to_s
+  - mailchimp_list = fmlm.object.mailchimp_list
+  - next if mailchimp_list.blank?
+
+  - if mailchimp_list.force_subscribe?
+    %p
+      = fmlm.check_box :subscribed, label: fmlm.object.to_s, disabled: true, hint: 'required'
+      = fmlm.hidden_field :subscribed, value: true
+
+  - elsif mailchimp_list.can_subscribe?
+    %p
+      = fmlm.check_box :subscribed, label: fmlm.object.to_s

@@ -80,6 +80,7 @@ ActiveRecord::Schema[7.0].define(version: 5) do
     t.string "web_id"
     t.string "name"
     t.boolean "can_subscribe"
+    t.boolean "force_subscribe"
     t.datetime "created_at", precision: nil
     t.datetime "updated_at", precision: nil
   end
