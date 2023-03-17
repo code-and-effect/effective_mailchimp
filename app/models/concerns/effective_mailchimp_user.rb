@@ -29,6 +29,47 @@ module EffectiveMailchimpUser
     after_commit(if: -> { mailchimp_user_form_action }) { mailchimp_update!(force: false) }
   end
 
+  # Intended for app to extend
+  def mailchimp_merge_fields
+    default_mailchimp_merge_fields()
+  end
+
+  # These are the fields we push to Mailchimp on list_add and list_update
+  def default_mailchimp_merge_fields
+    atts = {}
+
+    if respond_to?(:first_name) && respond_to?(:last_name)
+      atts.merge!(
+        'FNAME': first_name,
+        'LNAME': last_name
+      )
+    end
+
+    if respond_to?(:addresses)
+      address = try(:billing_address) || addresses.last
+
+      atts.merge!(
+        'ADDRESS1': address&.address1,
+        'ADDRESS2': address&.address2,
+        'CITY': address&.city,
+        'PROVINCE': address&.province,
+        'COUNTRY': address&.country,
+        'POSTAL_CODE': address&.postal_code
+      )
+    end
+
+    if respond_to?(:membership)
+      atts.merge!(
+        'CATEGORY': membership&.categories&.to_sentence,
+        'STATUS': membership&.statuses&.to_sentence,
+        'NUMBER': membership&.number,
+        'JOINED': membership&.joined_on&.strftime('%F')
+      )
+    end
+
+    atts
+  end
+
   def mailchimp_subscribed_lists
     mailchimp_list_members.select(&:subscribed?).map(&:mailchimp_list)
   end

@@ -1,0 +1,16 @@
+%h1.effective-admin-heading= @page_title
+
+.card
+  .card-body
+    = collapse('Show merge field settings') do
+      %p The following Merge fields are sent to Mailchimp when a user subscribes:
+
+      %ul
+        - current_user.mailchimp_merge_fields.keys.each do |key|
+          %li= key
+
+      %p To have these fields displayed in Mailchimp, please configure each campaign with any of these merge fields.
+
+    .mb-4
+
+    = render_datatable @datatable

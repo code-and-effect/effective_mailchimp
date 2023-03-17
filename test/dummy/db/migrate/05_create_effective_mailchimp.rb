@@ -7,6 +7,7 @@ class CreateEffectiveMailchimp < ActiveRecord::Migration[4.2]
       t.string :name
 
       t.boolean :can_subscribe
+      t.boolean :force_subscribe
 
       t.timestamps
     end
