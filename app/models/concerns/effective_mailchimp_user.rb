@@ -26,7 +26,9 @@ module EffectiveMailchimpUser
     accepts_nested_attributes_for :mailchimp_lists, allow_destroy: true
 
     # The user updated the form
-    after_commit(if: -> { mailchimp_user_form_action }) { mailchimp_update!(force: false) }
+    after_commit(if: -> { mailchimp_user_form_action }) do
+      EffectiveMailchimpUpdateJob.perform_later(self)
+    end
   end
 
   # Intended for app to extend
@@ -107,11 +109,13 @@ module EffectiveMailchimpUser
 
     return if lists.length == mailchimp_list_members.length && !(force || mailchimp_sync_required?)
 
-    lists.each do |mailchimp_list|
-      member = build_mailchimp_list_member(mailchimp_list: mailchimp_list)
+    Timeout::timeout(lists.length * 2) do
+      lists.each do |mailchimp_list|
+        member = build_mailchimp_list_member(mailchimp_list: mailchimp_list)
 
-      list_member = api.list_member(mailchimp_list, email) || {}
-      member.assign_mailchimp_attributes(list_member)
+        list_member = api.list_member(mailchimp_list, email) || {}
+        member.assign_mailchimp_attributes(list_member)
+      end
     end
 
     mailchimp_list_members.each do |member|
