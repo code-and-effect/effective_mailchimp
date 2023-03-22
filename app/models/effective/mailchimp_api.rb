@@ -76,7 +76,7 @@ module Effective
       payload = {
         email_address: member.user.email,
         status: (member.subscribed ? 'subscribed' : 'unsubscribed'),
-        merge_fields: merge_fields
+        merge_fields: merge_fields.delete_if { |k, v| v.blank? }
       }
 
       client.lists.add_list_member(member.mailchimp_list.mailchimp_id, payload)
@@ -91,7 +91,7 @@ module Effective
       payload = {
         email_address: member.user.email,
         status: (member.subscribed ? 'subscribed' : 'unsubscribed'),
-        merge_fields: merge_fields.compact
+        merge_fields: merge_fields.delete_if { |k, v| v.blank? }
       }
 
       client.lists.update_list_member(member.mailchimp_list.mailchimp_id, member.email, payload)
