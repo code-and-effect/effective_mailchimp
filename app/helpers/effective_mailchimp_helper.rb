@@ -6,6 +6,7 @@ module EffectiveMailchimpHelper
     resource = form.object
     raise('expected an effective_mailchimp_user resource') unless resource.class.respond_to?(:effective_mailchimp_user?)
 
+    resource.reload
     resource.mailchimp_sync!(force: false)
 
     render('effective/mailchimp_user/fields', form: form, f: form, resource: resource, mailchimp_user: resource)
