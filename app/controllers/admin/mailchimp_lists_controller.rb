@@ -3,12 +3,17 @@ module Admin
     before_action(:authenticate_user!) if defined?(Devise)
     before_action { EffectiveResources.authorize!(self, :admin, :effective_mailchimp) }
 
-    # Calls Sync
-    before_action(only: :index) { 
-      Timeout::timeout(5) { Effective::MailchimpList.sync! }
-    }
-
     include Effective::CrudController
+
+    def mailchimp_sync
+      EffectiveResources.authorize!(self, :mailchimp_sync, Effective::MailchimpList)
+
+      Effective::MailchimpList.sync!
+
+      flash[:success] = "Successfully synced mailchimp lists"
+
+      redirect_back(fallback_location: effective_mailchimp.admin_mailchimp_lists_path)
+    end
 
     private
 

@@ -1,16 +1,20 @@
 %h1.effective-admin-heading= @page_title
 
-.card
-  .card-body
-    = collapse('Show merge field settings') do
-      %p The following Merge fields are sent to Mailchimp when a user subscribes:
+- resource = (@_effective_resource || Effective::Resource.new(controller_path))
 
-      %ul
-        - current_user.mailchimp_merge_fields.keys.each do |key|
-          %li= key
+.resource-buttons
+  = render_resource_buttons(resource.klass, (action ||= :index) => false)
 
-      %p To have these fields displayed in Mailchimp, please configure each campaign with any of these merge fields.
+= card do
+  = collapse('Show merge field settings') do
+    %p The following Merge fields are sent to Mailchimp when a user subscribes:
 
-    .mb-4
+    %ul
+      - current_user.mailchimp_merge_fields.keys.each do |key|
+        %li= key
 
-    = render_datatable @datatable
+    %p To have these fields displayed in Mailchimp, please configure each campaign with any of these merge fields.
+
+  .mb-4
+
+  = render_datatable @datatable
