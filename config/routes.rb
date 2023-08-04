@@ -7,6 +7,9 @@ end
 EffectiveMailchimp::Engine.routes.draw do
   # Public routes
   scope module: 'effective' do
+    resources :mailchimp, only: [] do
+      post :mailchimp_sync_user, on: :member
+    end
   end
 
   namespace :admin do
@@ -16,12 +19,13 @@ EffectiveMailchimp::Engine.routes.draw do
 
       post :force_subscribe, on: :member
       post :unforce_subscribe, on: :member
+
+      get :mailchimp_sync, on: :collection
     end
 
     resources :mailchimp, only: [] do
       post :mailchimp_sync_user, on: :member
     end
-
   end
 
 end

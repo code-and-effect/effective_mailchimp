@@ -21,8 +21,16 @@ module Effective
       @client.set_config(api_key: @api_key, server: @server)
     end
 
+    def debug?
+      Rails.env.development?
+    end
+
     def admin_url
       "https://#{server}.admin.mailchimp.com"
+    end
+
+    def public_url
+      "https://mailchimp.com"
     end
 
     def ping
@@ -32,11 +40,15 @@ module Effective
     # Returns an Array of Lists, which are each Hash
     # Like this [{ ...}, { ... }]
     def lists
+      Rails.logger.info "[effective_mailchimp] Index Lists..." if debug?
+
       response = client.lists.get_all_lists(count: 250)
       Array(response['lists']) - [nil, '', {}]
     end
 
     def list(id)
+      Rails.logger.info "[effective_mailchimp] Show List..." if debug?
+
       client.lists.get_list(id.try(:mailchimp_id) || id)
     end
 
@@ -69,6 +81,9 @@ module Effective
 
     def list_member_add(member)
       raise('expected an Effective::MailchimpListMember') unless member.kind_of?(Effective::MailchimpListMember)
+
+      existing = list_member(member.mailchimp_list, member.user.email)
+      return existing if existing.present?
 
       merge_fields = member.user.mailchimp_merge_fields
       raise('expected user mailchimp_merge_fields to be a Hash') unless merge_fields.kind_of?(Hash)

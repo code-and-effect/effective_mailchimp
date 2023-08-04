@@ -1,0 +1,15 @@
+- user = f.object
+
+- if user.persisted?
+  %p.text-muted
+    %small
+      last synced with
+      = link_to 'Mailchimp', EffectiveMailchimp.api.admin_url, target: '_blank'
+      - if user.mailchimp_last_synced_at.present?
+        = time_ago_in_words(user.mailchimp_last_synced_at)
+        ago.
+      - else
+        never.
+
+      - if EffectiveResources.authorized?(self, :mailchimp_sync_user, user) 
+        = link_to 'sync now', effective_mailchimp.mailchimp_sync_user_admin_mailchimp_path(user), 'data-method': :post

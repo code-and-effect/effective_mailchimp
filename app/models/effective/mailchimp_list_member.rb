@@ -21,6 +21,8 @@ module Effective
       timestamps
     end
 
+    validates :mailchimp_list_id, uniqueness: { scope: [:user_type, :user_id] }
+
     scope :deep, -> { includes(:mailchimp_list, :user) }
     scope :sorted, -> { order(:id) }
 
@@ -41,6 +43,10 @@ module Effective
         subscribed: (atts['status'] == 'subscribed'),
         last_synced_at: Time.zone.now
       )
+    end
+
+    def synced?
+      last_synced_at.present?
     end
 
   end
