@@ -12,18 +12,7 @@
   = effective_form_with model: [:admin, user] do |f|
     = f.hidden_field :id
 
-    = mailchimp_user_fields(f)
-
-    %p.text-muted
-      %small
-        last synced with
-        = link_to 'Mailchimp', EffectiveMailchimp.api.admin_url
-        - if user.mailchimp_last_synced_at.present?
-          = time_ago_in_words(user.mailchimp_last_synced_at)
-          ago.
-        - else
-          never.
-
-        = link_to 'sync now', effective_mailchimp.mailchimp_sync_user_admin_mailchimp_path(f.object), 'data-method': :post
+    = render('effective/mailchimp_user/fields', f: f)
+    = render('admin/mailchimp_user/sync', f: f)
 
     = f.submit

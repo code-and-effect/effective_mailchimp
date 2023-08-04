@@ -25,6 +25,10 @@ module Effective
       "https://#{server}.admin.mailchimp.com"
     end
 
+    def public_url
+      "https://mailchimp.com"
+    end
+
     def ping
       client.ping.get()
     end
@@ -69,6 +73,9 @@ module Effective
 
     def list_member_add(member)
       raise('expected an Effective::MailchimpListMember') unless member.kind_of?(Effective::MailchimpListMember)
+
+      existing = list_member(member.mailchimp_list, member.user.email)
+      return existing if existing.present?
 
       merge_fields = member.user.mailchimp_merge_fields
       raise('expected user mailchimp_merge_fields to be a Hash') unless merge_fields.kind_of?(Hash)

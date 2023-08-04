@@ -21,6 +21,8 @@ module Effective
       timestamps
     end
 
+    validates :mailchimp_list_id, uniqueness: { scope: [:user_type, :user_id] }
+
     scope :deep, -> { includes(:mailchimp_list, :user) }
     scope :sorted, -> { order(:id) }
 
