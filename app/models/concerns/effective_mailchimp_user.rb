@@ -35,6 +35,15 @@ module EffectiveMailchimpUser
     end
   end
 
+  def mailchimp_subscribed?(mailchimp_list)
+    raise('expected a MailchimpList') unless mailchimp_lists.all? { |list| list.kind_of?(Effective::MailchimpList) }
+
+    member = mailchimp_list_member(mailchimp_list: mailchimp_list)
+    return false if member.blank?
+
+    member.subscribed? && member.synced?
+  end
+
   # Api method to just subscribe this user to this list right now
   # Pass one list or an Array of lists
   def mailchimp_subscribe!(mailchimp_list)
@@ -186,8 +195,6 @@ module EffectiveMailchimpUser
 
     save!
   end
-
-
 
   private
 

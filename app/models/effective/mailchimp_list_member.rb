@@ -45,5 +45,9 @@ module Effective
       )
     end
 
+    def synced?
+      last_synced_at.present?
+    end
+
   end
 end

@@ -4,7 +4,9 @@ module Admin
     before_action { EffectiveResources.authorize!(self, :admin, :effective_mailchimp) }
 
     # Calls Sync
-    before_action(only: :index) { Effective::MailchimpList.sync! }
+    before_action(only: :index) { 
+      Timeout::timeout(5) { Effective::MailchimpList.sync! }
+    }
 
     include Effective::CrudController
 
