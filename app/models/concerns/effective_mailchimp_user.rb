@@ -183,13 +183,13 @@ module EffectiveMailchimpUser
 
     assign_attributes(mailchimp_user_form_action: nil)
 
-    mailchimp_list_members.map do |member|
+    mailchimp_list_members.each do |member|
       if member.mailchimp_id.blank? && member.subscribed?
         list_member = api.list_member_add(member)
-        member.assign_mailchimp_attributes(list_member)
+        member.assign_mailchimp_attributes(list_member) if list_member.present?
       elsif member.mailchimp_id.present?
         list_member = api.list_member_update(member)
-        member.assign_mailchimp_attributes(list_member)
+        member.assign_mailchimp_attributes(list_member) if list_member.present?
       end
     end
 
