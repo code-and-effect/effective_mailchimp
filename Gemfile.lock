@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    effective_mailchimp (0.2.5)
+    effective_mailchimp (0.3.1)
       MailchimpMarketing
       effective_bootstrap
       effective_datatables (>= 4.0.0)
@@ -154,7 +154,7 @@ GEM
       timecop
       webdrivers
     erubi (1.12.0)
-    excon (0.100.0)
+    excon (0.102.0)
     execjs (2.8.1)
     faker (3.1.1)
       i18n (>= 1.8.11, < 2)
