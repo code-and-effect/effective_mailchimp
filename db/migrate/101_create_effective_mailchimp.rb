@@ -1,6 +1,5 @@
 class CreateEffectiveMailchimp < ActiveRecord::Migration[6.0]
   def change
-
     create_table :mailchimp_lists do |t|
       t.string :mailchimp_id
       t.string :web_id

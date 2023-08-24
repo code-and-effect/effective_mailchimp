@@ -1,6 +1,5 @@
 module Effective
   class MailchimpList < ActiveRecord::Base
-
     self.table_name = (EffectiveMailchimp.mailchimp_lists_table_name || :mailchimp_lists).to_s
 
     has_many :mailchimp_list_members, dependent: :delete_all
