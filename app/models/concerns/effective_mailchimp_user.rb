@@ -29,6 +29,10 @@ module EffectiveMailchimpUser
     has_many :mailchimp_lists, -> { Effective::MailchimpList.sorted }, through: :mailchimp_list_members, class_name: 'Effective::MailchimpList'
     accepts_nested_attributes_for :mailchimp_lists, allow_destroy: true
 
+    scope :deep_effective_mailchimp_user, -> { 
+      includes(mailchimp_list_members: [:mailchimp_list])
+    }
+
     # The user updated the form
     after_commit(if: -> { mailchimp_member_update_required? }) do
       EffectiveMailchimpUpdateJob.perform_later(self)
