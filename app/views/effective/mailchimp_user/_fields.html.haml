@@ -9,8 +9,11 @@
 
   - if mailchimp_list.force_subscribe?
     %p
-      = fmlm.check_box :subscribed, label: fmlm.object.to_s, disabled: true, hint: 'required', checked: true
-      = fmlm.hidden_field :subscribed, value: true
+      - if fmlm.object.cannot_be_subscribed?
+        = fmlm.check_box :subscribed, label: fmlm.object.to_s, disabled: true, hint: 'required but unsubscribed', checked: false
+      - else
+        = fmlm.check_box :subscribed, label: fmlm.object.to_s, disabled: true, hint: 'required', checked: true
+        = fmlm.hidden_field :subscribed, value: true
 
   - elsif mailchimp_list.can_subscribe?
     %p

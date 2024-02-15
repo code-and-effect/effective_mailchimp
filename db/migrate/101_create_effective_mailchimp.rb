@@ -23,7 +23,8 @@ class CreateEffectiveMailchimp < ActiveRecord::Migration[6.0]
       t.string :email_address
       t.string :full_name
 
-      t.boolean :subscribed
+      t.boolean :subscribed, default: false
+      t.boolean :cannot_be_subscribed, default: false
 
       t.datetime :last_synced_at
 
