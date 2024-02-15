@@ -189,13 +189,13 @@ module EffectiveMailchimpUser
 
     mailchimp_list_members.each do |member|
       begin
-        if member.mailchimp_id.blank? && member.subscribed?
-          list_member = api.list_member_add(member)
-          member.assign_mailchimp_attributes(list_member) if list_member.present?
+        list_member = if member.mailchimp_id.blank? && member.subscribed?
+          api.list_member_add(member)
         elsif member.mailchimp_id.present?
-          list_member = api.list_member_update(member)
-          member.assign_mailchimp_attributes(list_member) if list_member.present?
+          api.list_member_update(member)
         end
+
+        member.assign_mailchimp_attributes(list_member) if list_member.present?
       rescue MailchimpMarketing::ApiError => e
         if e.to_s.downcase.include?("cannot be subscribed")
           member.assign_mailchimp_cannot_be_subscribed
