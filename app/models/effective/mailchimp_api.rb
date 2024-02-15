@@ -94,13 +94,7 @@ module Effective
         merge_fields: merge_fields.delete_if { |k, v| v.blank? }
       }
 
-      begin
-        client.lists.add_list_member(member.mailchimp_list.mailchimp_id, payload)
-      rescue MailchimpMarketing::ApiError => e
-        return false if e.status == 400 && e.to_s.downcase.include?("member in compliance state")
-        raise(e)
-      end
-
+      client.lists.add_list_member(member.mailchimp_list.mailchimp_id, payload)
     end
 
     def list_member_update(member)
