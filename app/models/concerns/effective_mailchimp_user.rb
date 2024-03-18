@@ -197,7 +197,7 @@ module EffectiveMailchimpUser
 
         member.assign_mailchimp_attributes(list_member) if list_member.present?
       rescue MailchimpMarketing::ApiError => e
-        if e.to_s.downcase.include?("cannot be subscribed")
+        if e.to_s.downcase.include?("cannot be subscribed") || e.to_s.downcase.include?('deleted')
           member.assign_mailchimp_cannot_be_subscribed
         else
           raise(e)
