@@ -113,11 +113,20 @@ module EffectiveMailchimpUser
     end
 
     if respond_to?(:membership)
+      membership = memberships.first() # Individual or organization membership
+
       atts.merge!(
         'CATEGORY': membership&.categories&.to_sentence,
         'STATUS': membership&.statuses&.to_sentence,
         'NUMBER': membership&.number,
         'JOINED': membership&.joined_on&.strftime('%F')
+      )
+    end
+
+    if self.class.respond_to?(:effective_memberships_organization_user?)
+      atts.merge!(
+        'COMPANY': representatives.map { |rep| rep.organization.to_s }.join(', ').presence,
+        'ROLES': representatives.flat_map { |rep| rep.roles }.compact.join(', ').presence,
       )
     end
 
