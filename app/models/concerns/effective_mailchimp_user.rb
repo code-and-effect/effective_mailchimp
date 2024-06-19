@@ -50,17 +50,20 @@ module EffectiveMailchimpUser
 
   # Api method to just subscribe this user to this list right now
   # Pass one list or an Array of lists
-  def mailchimp_subscribe!(mailchimp_list)
+  def mailchimp_subscribe!(mailchimp_list, subscribed: true, now: false)
     mailchimp_lists = Array(mailchimp_list)
     raise('expected a MailchimpList') unless mailchimp_lists.all? { |list| list.kind_of?(Effective::MailchimpList) }
 
     mailchimp_lists.each do |mailchimp_list|
       member = build_mailchimp_list_member(mailchimp_list: mailchimp_list)
-      member.assign_attributes(subscribed: true)
+      member.assign_attributes(subscribed: subscribed)
     end
 
     # This sets up the after_commit to run the mailchimp_update! job
     assign_attributes(mailchimp_user_form_action: true)
+
+    # For use in a rake task. Run the update right now
+    mailchimp_update! if now
 
     save!
   end
