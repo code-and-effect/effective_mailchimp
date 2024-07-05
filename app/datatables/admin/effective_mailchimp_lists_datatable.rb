@@ -6,7 +6,8 @@ module Admin
     end
 
     datatable do
-      order :updated_at
+      length :all
+      order :name
 
       col :updated_at, visible: false
       col :created_at, visible: false
@@ -21,13 +22,14 @@ module Admin
 
       col :url, label: 'Mailchimp' do |ml|
         [
-          link_to('View Campaign', ml.url, target: '_blank'),
           link_to('View Members', ml.members_url, target: '_blank'),
           link_to('View Merge Fields', ml.merge_fields_url, target: '_blank')
         ].join('<br>').html_safe
       end
 
-      col :merge_fields
+      col :merge_fields, visible: false do |ml|
+        ml.merge_fields.join(', ')
+      end
 
       actions_col
     end

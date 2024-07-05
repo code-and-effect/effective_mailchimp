@@ -29,6 +29,22 @@ module Effective
       "https://#{server}.admin.mailchimp.com"
     end
 
+    def audience_url
+      "https://#{server}.admin.mailchimp.com/audience/"
+    end
+
+    def groups_url
+      "https://#{server}.admin.mailchimp.com/lists/dashboard/groups/"
+    end
+
+    def contacts_url
+      "https://#{server}.admin.mailchimp.com/audience/contacts"
+    end
+
+    def campaigns_url
+      "https://#{server}.admin.mailchimp.com/campaigns/"
+    end
+
     def public_url
       "https://mailchimp.com"
     end
@@ -52,6 +68,20 @@ module Effective
       client.lists.get_list(id.try(:mailchimp_id) || id)
     end
 
+    def categories(list_id)
+      Rails.logger.info "[effective_mailchimp] Index Interest Categories..." if debug?
+
+      response = client.lists.get_list_interest_categories(list_id.try(:mailchimp_id) || list_id)
+      Array(response['categories']) - [nil, '', {}]
+    end
+
+    def interests(list_id, category_id)
+      Rails.logger.info "[effective_mailchimp] Index Interest Category Interests..." if debug?
+
+      response = client.lists.list_interest_category_interests(list_id, category_id)
+      Array(response['interests']) - [nil, '', {}]
+    end
+
     def list_member(id, email)
       raise('expected an email') unless email.to_s.include?('@')
 
@@ -63,7 +93,7 @@ module Effective
     end
 
     def list_merge_fields(id)
-      response = client.lists.get_list_merge_fields(id, count: 100)
+      response = client.lists.get_list_merge_fields(id.try(:mailchimp_id) || id, count: 100)
       Array(response['merge_fields']) - [nil, '', {}]
     end
 
@@ -73,7 +103,7 @@ module Effective
       payload = { name: name.to_s.titleize, tag: name.to_s, type: type }
 
       begin
-        client.lists.add_list_merge_field(id, payload)
+        client.lists.add_list_merge_field(id.try(:mailchimp_id) || id, payload)
       rescue MailchimpMarketing::ApiError => e
         false
       end
@@ -85,19 +115,18 @@ module Effective
       existing = list_member(member.mailchimp_list, member.user.email)
       return existing if existing.present?
 
-      merge_fields = member.user.mailchimp_merge_fields
-      raise('expected user mailchimp_merge_fields to be a Hash') unless merge_fields.kind_of?(Hash)
-
-      payload = {
-        email_address: member.user.email,
-        status: (member.subscribed ? 'subscribed' : 'unsubscribed'),
-        merge_fields: merge_fields.delete_if { |k, v| v.blank? }
-      }
-
+      payload = list_member_payload(member)
       client.lists.add_list_member(member.mailchimp_list.mailchimp_id, payload)
     end
 
     def list_member_update(member)
+      raise('expected an Effective::MailchimpListMember') unless member.kind_of?(Effective::MailchimpListMember)
+
+      payload = list_member_payload(member)
+      client.lists.update_list_member(member.mailchimp_list.mailchimp_id, member.email, payload)
+    end
+
+    def list_member_payload(member)
       raise('expected an Effective::MailchimpListMember') unless member.kind_of?(Effective::MailchimpListMember)
 
       merge_fields = member.user.mailchimp_merge_fields
@@ -106,10 +135,9 @@ module Effective
       payload = {
         email_address: member.user.email,
         status: (member.subscribed ? 'subscribed' : 'unsubscribed'),
-        merge_fields: merge_fields.delete_if { |k, v| v.blank? }
-      }
-
-      client.lists.update_list_member(member.mailchimp_list.mailchimp_id, member.email, payload)
+        merge_fields: merge_fields.delete_if { |k, v| v.blank? },
+        interests: member.interests_hash.presence
+      }.compact
     end
 
   end

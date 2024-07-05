@@ -1,0 +1,12 @@
+en:
+  effective_mailchimp:
+    name: 'Effective Mailchimp'
+    acronym: 'Mailchimp'
+
+  activerecord:
+    models:
+      # These ones should stay effective
+      effective/mailchimp_list: 'Mailchimp Audience'
+      effective/mailchimp_list_member: 'Mailchimp Audience Member'
+      effective/mailchimp_category: 'Mailchimp Group'
+      effective/mailchimp_interest: 'Mailchimp Group Interest'

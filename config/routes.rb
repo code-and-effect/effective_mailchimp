@@ -13,19 +13,17 @@ EffectiveMailchimp::Engine.routes.draw do
   end
 
   namespace :admin do
-    resources :mailchimp_lists, only: [:index, :edit, :update] do
-      post :can_subscribe, on: :member
-      post :cannot_subscribe, on: :member
-
-      post :force_subscribe, on: :member
-      post :unforce_subscribe, on: :member
-
-      get :mailchimp_sync, on: :collection
-    end
+    resources :mailchimp_lists, only: [:index, :edit, :update]
+    resources :mailchimp_interests, only: [:index, :edit, :update]
+    resources :mailchimp_categories, only: :index
+    resources :mailchimp_list_members, only: :index
 
     resources :mailchimp, only: [] do
+      post :mailchimp_sync, on: :collection
       post :mailchimp_sync_user, on: :member
     end
+
+    get '/mailchimp', to: 'mailchimp#index', as: :mailchimp
   end
 
 end

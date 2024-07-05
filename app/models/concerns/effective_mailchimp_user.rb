@@ -35,7 +35,7 @@ module EffectiveMailchimpUser
 
     # The user updated the form
     after_commit(if: -> { mailchimp_member_update_required? }) do
-      EffectiveMailchimpUpdateJob.perform_later(self)
+      EffectiveMailchimpUpdateJob.perform_later(self) # This calls user.mailchimp_update! on the background
     end
   end
 
@@ -138,6 +138,10 @@ module EffectiveMailchimpUser
 
   def mailchimp_subscribed_lists
     mailchimp_list_members.select(&:subscribed?).map(&:mailchimp_list)
+  end
+
+  def mailchimp_subscribed_interests
+    mailchimp_list_members.select(&:subscribed?).flat_map(&:interests)
   end
 
   def mailchimp_list_member(mailchimp_list:)

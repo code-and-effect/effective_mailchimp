@@ -1,5 +1,6 @@
 = effective_form_with(model: [:admin, mailchimp_list], engine: true) do |f|
   = f.static_field :name, label: EffectiveResources.et(mailchimp_list)
+  = f.static_field :merge_fields
 
   = f.check_box :can_subscribe, label: "Yes, display users and allow them to subscribe"
 

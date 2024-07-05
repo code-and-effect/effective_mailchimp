@@ -1,0 +1,80 @@
+%h1.effective-admin-heading= @page_title
+
+= card('Mailchimp Settings') do
+  - if EffectiveMailchimp.api_blank?
+    .alert.alert-danger You are not connected to Mailchimp. Please set your API key.
+
+  - if EffectiveMailchimp.api_present?
+    %p
+      = succeed('.') do
+        Please configure your
+        = link_to 'audiences', EffectiveMailchimp.api.audience_url, target: '_blank'
+        and 
+        = link_to 'groups', EffectiveMailchimp.api.groups_url, target: '_blank'
+        on the Mailchimp website then sync the changes so they can be updated below
+
+    %p
+      You can also visit the 
+      = link_to('contacts', EffectiveMailchimp.api.contacts_url, target: '_blank')
+      and
+      = link_to('campaigns', EffectiveMailchimp.api.campaigns_url, target: '_blank')
+      at anytime.
+
+    %p.text-muted
+      %small
+        To change the names or display order of items below, please visit the Mailchimp website then sync changes.
+        %br
+        This operation also creates the audience merge fields and updates the subscriber counts for each group below.
+
+    = render('admin/mailchimp/sync')
+
+  = collapse('More settings') do
+    %p
+      For more information see
+      = succeed(',') do
+        = link_to(etsd(Effective::MailchimpList), effective_mailchimp.admin_mailchimp_lists_path, target: '_blank')
+      = succeed(',') do
+        = link_to(etsd(Effective::MailchimpListMember), effective_mailchimp.admin_mailchimp_list_members_path, target: '_blank')
+      = succeed(',') do
+        = link_to(etsd(Effective::MailchimpCategory), effective_mailchimp.admin_mailchimp_categories_path, target: '_blank')
+      and
+      = succeed('.') do
+        = link_to(etsd(Effective::MailchimpInterest), effective_mailchimp.admin_mailchimp_interests_path, target: '_blank')
+
+    %p The following merge fields are sent to Mailchimp when a user subscribes:
+
+    %ul
+      - current_user.mailchimp_merge_fields.keys.sort.each do |key|
+        %li= key
+
+  .mb-4
+
+= card(Effective::MailchimpList) do
+  %p 
+    Audiences contain a list of your contacts.
+    View all #{link_to ets(Effective::MailchimpList), EffectiveMailchimp.api.audience_url, target: '_blank'}.
+
+  %p
+    %small
+      To change the name, please visit the Mailchimp website then sync changes.
+      Press the Edit button to change the Can Subscribe and Force Subscribe settings.
+
+  - datatable = Admin::EffectiveMailchimpListsDatatable.new
+  = render_datatable(datatable, simple: true, inline: true)
+
+= card(Effective::MailchimpCategory) do
+  %p 
+    The following groups are displayed to the user where they can opt-in to each interest.
+    View all #{link_to ets(Effective::MailchimpCategory), EffectiveMailchimp.api.groups_url, target: '_blank'}.
+
+  %p
+    %small
+      To change the name, please visit the Mailchimp website then sync changes.
+      Press the Edit button to change the Can Subscribe and Force Subscribe settings.
+      Sync changes to update the subscriber counts.
+
+  - Effective::MailchimpCategory.all.each do |mailchimp_category|
+    = card(mailchimp_category.to_s) do
+      - datatable = Admin::EffectiveMailchimpInterestsDatatable.new(mailchimp_category: mailchimp_category)
+      = render_datatable(datatable, simple: true, inline: true)
+

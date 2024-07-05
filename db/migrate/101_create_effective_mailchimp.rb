@@ -11,6 +11,41 @@ class CreateEffectiveMailchimp < ActiveRecord::Migration[6.0]
       t.timestamps
     end
 
+    create_table :mailchimp_categories do |t|
+      t.integer :mailchimp_list_id
+
+      t.string :mailchimp_id
+      t.string :list_id
+
+      t.string :name
+      t.string :list_name
+
+      t.string :display_type
+
+      t.timestamps
+    end
+
+    create_table :mailchimp_interests do |t|
+      t.integer :mailchimp_list_id
+      t.integer :mailchimp_category_id
+
+      t.string :mailchimp_id
+      t.string :list_id
+      t.string :category_id
+
+      t.string :name
+      t.string :list_name
+      t.string :category_name
+
+      t.integer :display_order
+      t.integer :subscriber_count
+
+      t.boolean :can_subscribe
+      t.boolean :force_subscribe
+
+      t.timestamps
+    end
+
     create_table :mailchimp_list_members do |t|
       t.integer :user_id
       t.string :user_type
@@ -25,6 +60,8 @@ class CreateEffectiveMailchimp < ActiveRecord::Migration[6.0]
 
       t.boolean :subscribed, default: false
       t.boolean :cannot_be_subscribed, default: false
+
+      t.text :interests
 
       t.datetime :last_synced_at
 

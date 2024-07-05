@@ -7,7 +7,7 @@ module EffectiveMailchimp
 
   def self.config_keys
     [
-      :mailchimp_lists_table_name, :mailchimp_list_members_table_name,
+      :mailchimp_lists_table_name, :mailchimp_list_members_table_name, :mailchimp_categories_table_name, :mailchimp_interests_table_name,
       :layout,
       :api_key
     ]
@@ -23,8 +23,12 @@ module EffectiveMailchimp
     api_key.present?
   end
 
+  def self.api_blank?
+    api_key.blank?
+  end
+
   def self.permitted_params
-    [ :mailchimp_user_form_action, mailchimp_list_members_attributes: [:id, :mailchimp_list_id, :subscribed] ]
+    [ :mailchimp_user_form_action, mailchimp_list_members_attributes: [:id, :mailchimp_list_id, :subscribed, interests: []] ]
   end
 
 end
