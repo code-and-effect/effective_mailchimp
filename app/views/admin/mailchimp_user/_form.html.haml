@@ -1,13 +1,19 @@
-= card(ets(Effective::MailchimpList)) do
-  %p.text-muted #{user} is subscribed to #{pluralize(user.mailchimp_subscribed_lists.count, et(Effective::MailchimpList))}.
+= card('Mailchimp') do
+  %p.text-muted
+    = succeed('.') do
+      = user
+      is subscribed to 
+      = pluralize(user.mailchimp_subscribed_lists.count, etd(Effective::MailchimpList))
+      and
+      = pluralize(user.mailchimp_subscribed_interests.count, etd(Effective::MailchimpInterest))
 
   %p.text-muted
     Please visit
-    = link_to 'All ' + ets(Effective::MailchimpList), effective_mailchimp.admin_mailchimp_lists_path, target: '_blank'
+    = link_to 'Mailchimp Settings', effective_mailchimp.admin_mailchimp_path, target: '_blank'
     to configure which are displayed.
 
   %p
-    %strong Subscribed
+    %strong Subscribed to the following
 
   = effective_form_with model: [:admin, user] do |f|
     = f.hidden_field :id

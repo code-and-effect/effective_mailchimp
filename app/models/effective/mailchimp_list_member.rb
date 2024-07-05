@@ -14,6 +14,8 @@ module Effective
       email_address   :string
       full_name       :string
 
+      interests       :text   # Array of mailchimp_interest mailchimp_ids
+
       # We set this on our side to update mailchimp and subscribe the user
       subscribed              :boolean
 
@@ -26,10 +28,13 @@ module Effective
       timestamps
     end
 
+    serialize :interests, Array
+
     validates :mailchimp_list_id, uniqueness: { scope: [:user_type, :user_id] }
 
     scope :deep, -> { includes(:mailchimp_list, :user) }
     scope :sorted, -> { order(:id) }
+    scope :subscribed, -> { where(subscribed: true) }
 
     def to_s
       mailchimp_list&.to_s || model_name.human
@@ -39,6 +44,37 @@ module Effective
       email_address.presence || user.email
     end
 
+    # Array of MailchimpInterest mailchimp_ids
+    def interests
+      Array(self[:interests]) - [nil, '']
+    end
+
+    # Array of MailchimpInterests
+    def mailchimp_interests
+      all_mailchimp_interests.select { |interest| interests.include?(interest.mailchimp_id) }
+    end
+
+    # We use this to add the force_subscribed interests
+    def build_interests(mailchimp_interest)
+      mailchimp_ids = Array(mailchimp_interest).map { |interest| interest.try(:mailchimp_id) || interest }
+      raise('expected an array of MailchimpInterests or mailchimp_ids') unless mailchimp_ids.all? { |id| id.kind_of?(String) && id.length > 1 }
+
+      assign_attributes(interests: interests | mailchimp_ids)
+    end
+
+    # {"25a38426c9" => false, "9b826db370" => true }
+    def interests_hash
+      all_mailchimp_interests.each_with_object({}) do |interest, hash|
+        hash[interest.mailchimp_id] = interests.include?(interest.mailchimp_id)
+      end
+    end
+
+    # From the mailchimp list
+    def all_mailchimp_interests
+      return [] if mailchimp_list.blank?
+      mailchimp_list.mailchimp_categories.flat_map(&:mailchimp_interests)
+    end
+
     def assign_mailchimp_attributes(atts)
       assign_attributes(
         mailchimp_id: atts['id'],
@@ -46,7 +82,8 @@ module Effective
         email_address: atts['email_address'],
         full_name: atts['full_name'],
         subscribed: (atts['status'] == 'subscribed'),
-        last_synced_at: Time.zone.now
+        last_synced_at: Time.zone.now,
+        interests: Hash(atts['interests']).select { |_, subscribed| subscribed == true }.keys
       )
     end
 

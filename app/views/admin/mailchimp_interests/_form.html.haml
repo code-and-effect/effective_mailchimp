@@ -1,0 +1,10 @@
+= effective_form_with(model: [:admin, mailchimp_interest], engine: true) do |f|
+  = f.static_field :name, label: EffectiveResources.et(mailchimp_interest)
+
+  = f.check_box :can_subscribe, label: "Yes, display this interest and allow them to subscribe"
+
+  = f.check_box :force_subscribe,
+    label: "Yes, force users to subscribe. Subscribe them automatically and do not allow unsubscribe from the website",
+    hint: "They can still unsubscribe from the email link to unsubscribe"
+
+  = effective_submit(f)

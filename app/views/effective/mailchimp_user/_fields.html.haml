@@ -7,14 +7,41 @@
   = fmlm.hidden_field :id
   = fmlm.hidden_field :mailchimp_list_id
 
-  - if mailchimp_list.force_subscribe?
-    %p
-      - if fmlm.object.cannot_be_subscribed?
-        = fmlm.check_box :subscribed, label: fmlm.object.to_s, disabled: true, hint: 'required but unsubscribed', checked: false
-      - else
-        = fmlm.check_box :subscribed, label: fmlm.object.to_s, disabled: true, hint: 'required', checked: true
-        = fmlm.hidden_field :subscribed, value: true
+  - # With groups, probably single audience implementation
+  - if mailchimp_list.grouped?
+    = fmlm.hidden_field :subscribed, value: true
 
-  - elsif mailchimp_list.can_subscribe?
-    %p
-      = fmlm.check_box :subscribed, label: fmlm.object.to_s
+    - # For each group / mailchimp_category
+    - mailchimp_list.mailchimp_categories.each do |mailchimp_category|
+      - mailchimp_interests = mailchimp_category.mailchimp_interests
+
+      - # Force subscription of each interest
+      - forced = mailchimp_interests.select { |mi| mi.force_subscribe? }
+      - fmlm.object.build_interests(forced)
+
+      - forced.each do |mailchimp_interest|
+        = fmlm.hidden_field :interests, name: "#{fmlm.object_name}[interests][]", value: mailchimp_interest.mailchimp_id
+
+      - # Add control for mailchimp interests
+      - mailchimp_interests_collection = mailchimp_list_member_interests_collection(mailchimp_interests)
+
+      - if mailchimp_category.display_type == 'select'
+        = fmlm.select :interests, mailchimp_interests_collection, label: mailchimp_category.to_s, name: "#{fmlm.object_name}[interests][]"
+      - elsif mailchimp_category.display_type == 'radio'
+        = fmlm.radios :interests, mailchimp_interests_collection, label: mailchimp_category.to_s, name: "#{fmlm.object_name}[interests][]"
+      - else
+        = fmlm.checks :interests, mailchimp_interests_collection, label: mailchimp_category.to_s, name: "#{fmlm.object_name}[interests][]"
+
+  - # No groups, multiple audiences implementation
+  - if mailchimp_list.ungrouped?
+    - if mailchimp_list.force_subscribe?
+      %p
+        - if fmlm.object.cannot_be_subscribed?
+          = fmlm.check_box :subscribed, label: fmlm.object.to_s, disabled: true, hint: 'required but unsubscribed', checked: false
+        - else
+          = fmlm.check_box :subscribed, label: fmlm.object.to_s, disabled: true, hint: 'required', checked: true
+          = fmlm.hidden_field :subscribed, value: true
+
+    - elsif mailchimp_list.can_subscribe?
+      %p
+        = fmlm.check_box :subscribed, label: fmlm.object.to_s
