@@ -28,7 +28,11 @@ module Effective
       timestamps
     end
 
-    serialize :interests, Array
+    if EffectiveResources.serialize_with_coder?
+      serialize :interests, type: Array, coder: YAML
+    else
+      serialize :interests, Array
+    end
 
     validates :mailchimp_list_id, uniqueness: { scope: [:user_type, :user_id] }
 
