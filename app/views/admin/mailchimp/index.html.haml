@@ -20,13 +20,12 @@
       = link_to('campaigns', EffectiveMailchimp.api.campaigns_url, target: '_blank')
       at anytime.
 
-    %p.text-muted
-      %small
-        To change the names or display order of items below, please visit the Mailchimp website then sync changes.
-        %br
-        This operation also creates the audience merge fields and updates the subscriber counts for each group below.
+    %p To change the names or display order of items below, please visit the Mailchimp website then sync changes.
 
     = render('admin/mailchimp/sync')
+
+    %p.text-muted
+      %small This operation also creates the audience merge fields and updates the member and subscriber counts below.
 
   = collapse('More settings') do
     %p
@@ -44,7 +43,7 @@
     %p The following merge fields are sent to Mailchimp when a user subscribes:
 
     %ul
-      - current_user.mailchimp_merge_fields.keys.sort.each do |key|
+      - EffectiveMailchimp.merge_fields.keys.sort.each do |key|
         %li= key
 
   .mb-4
@@ -60,7 +59,7 @@
       Press the Edit button to change the Can Subscribe and Force Subscribe settings.
 
   - datatable = Admin::EffectiveMailchimpListsDatatable.new
-  = render_datatable(datatable, simple: true, inline: true)
+  = render_datatable(datatable, inline: true, short: true, search: false, sort: false)
 
 = card(Effective::MailchimpCategory) do
   %p 
@@ -76,5 +75,5 @@
   - Effective::MailchimpCategory.all.each do |mailchimp_category|
     = card(mailchimp_category.to_s) do
       - datatable = Admin::EffectiveMailchimpInterestsDatatable.new(mailchimp_category: mailchimp_category)
-      = render_datatable(datatable, simple: true, inline: true)
+      = render_datatable(datatable, inline: true, short: true, search: false, sort: false)
 

@@ -25,7 +25,8 @@ module Effective
     scope :sorted, -> { order(:name) }
     scope :subscribable, -> { all }
 
-    # Creates or builds all the Lists
+    # Reads all the InterestCategories from Mailchimp and creates local MailchimpCategory records
+    # This is part of the Sync changes from Mailchimp button
     def self.sync!(api: EffectiveMailchimp.api)
       # For every mailchimp_list, get all the categories
       mailchimp_lists = Effective::MailchimpList.all

@@ -13,7 +13,11 @@ EffectiveMailchimp::Engine.routes.draw do
   end
 
   namespace :admin do
-    resources :mailchimp_lists, only: [:index, :edit, :update]
+    resources :mailchimp_lists, only: [:index, :edit, :update] do
+      post :subscribe_all_users, on: :member
+      post :subscribe_all_members, on: :member
+    end
+
     resources :mailchimp_interests, only: [:index, :edit, :update]
     resources :mailchimp_categories, only: :index
     resources :mailchimp_list_members, only: :index

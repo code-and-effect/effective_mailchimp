@@ -33,7 +33,8 @@ module Effective
     scope :sorted, -> { order(:display_order) }
     scope :subscribable, -> { where(can_subscribe: true) }
 
-    # Creates or builds all the Lists
+    # Reads all the InterestCategoriesInterests from Mailchimp and creates local MailchimpInterest records
+    # This is part of the Sync changes from Mailchimp button
     def self.sync!(api: EffectiveMailchimp.api)
       # For every mailchimp_list, get all the interests
       mailchimp_lists = Effective::MailchimpList.deep.all
