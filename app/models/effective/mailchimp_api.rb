@@ -109,7 +109,7 @@ module Effective
       raise("invalid mailchimp merge key: #{name}. Must be 10 or fewer characters") if name.to_s.length > 10
 
       return if sandbox_mode?
-      Rails.logger.info "[effective_mailchimp] Add List Merge Field" if debug?
+      Rails.logger.info "[effective_mailchimp] Add List Merge Field #{name}" if debug?
 
       payload = { name: name.to_s.titleize, tag: name.to_s, type: type }
 

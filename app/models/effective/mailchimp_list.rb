@@ -62,10 +62,7 @@ module Effective
 
         mailchimp_lists.reject(&:destroyed?).each do |mailchimp_list|
           existing = api.list_merge_fields(mailchimp_list).map { |hash| hash['tag'] }
-          (merge_field_keys - existing).each do |name| 
-            puts "Adding merge field #{name} to #{mailchimp_list}"
-            api.add_merge_field(mailchimp_list, name: name)
-          end
+          (merge_field_keys - existing).each { |name| api.add_merge_field(mailchimp_list, name: name) }
         end
       end
 
