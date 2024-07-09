@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    effective_mailchimp (0.5.2)
+    effective_mailchimp (0.7.0)
       MailchimpMarketing
       effective_bootstrap
       effective_datatables (>= 4.0.0)

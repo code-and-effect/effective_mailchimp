@@ -22,8 +22,10 @@ module Effective
     scope :sorted, -> { order(:name) }
     scope :subscribable, -> { where(can_subscribe: true) }
 
-    # Creates or builds all the Lists
-    def self.sync!(api: EffectiveMailchimp.api, merge_fields: nil)
+    # Reads all the Lists from Mailchimp and creates local MailchimpList records
+    # Also writes our merge fields to Mailchimp if they don't exist
+    # This is part of the Sync changes from Mailchimp button
+    def self.sync!(api: EffectiveMailchimp.api)
       # All the Lists from Mailchimp
       lists = api.lists()
 
@@ -40,6 +42,7 @@ module Effective
 
           web_id: list['web_id'],
           name: list['name'],
+          member_count: (list.dig('stats', 'member_count') || 0),
           updated_at: Time.zone.now
         )
 
@@ -54,7 +57,7 @@ module Effective
       end
 
       # Sync merge fields
-      if merge_fields.present?
+      if (merge_fields = EffectiveMailchimp.merge_fields).present?
         merge_field_keys = merge_fields.keys.map(&:to_s)
 
         mailchimp_lists.reject(&:destroyed?).each do |mailchimp_list|
@@ -67,6 +70,22 @@ module Effective
       end
 
       true
+    end
+
+    def subscribe_all_users!(now: false)
+      if now
+        subscribe_all!(EffectiveMailchimp.User.all)
+      else
+        EffectiveMailchimpSubscribeAllUsersJob.perform_later(self)
+      end
+    end
+
+    def subscribe_all_members!(now: false)
+      if now
+        subscribe_all!(EffectiveMailchimp.User.all.members)
+      else
+        EffectiveMailchimpSubscribeAllMembersJob.perform_later(self)
+      end
     end
 
     def to_s
@@ -92,6 +111,22 @@ module Effective
 
     def merge_fields_url
       EffectiveMailchimp.api.admin_url + "/lists/settings/merge-tags?id=#{web_id}"
+    end
+
+    private
+
+    def subscribe_all!(users)
+      users.find_each do |user|
+        begin
+          user.mailchimp_subscribe!(self, subscribed: true, now: true)
+        rescue => e
+          EffectiveLogger.error(e.message, associated: user) if defined?(EffectiveLogger)
+          ExceptionNotifier.notify_exception(e, data: { user_id: user.id, mailchimp_list_id: id }) if defined?(ExceptionNotifier)
+          raise(e) if Rails.env.test? || Rails.env.development?
+        end
+      end
+
+      true
     end
 
   end

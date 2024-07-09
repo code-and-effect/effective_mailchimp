@@ -16,9 +16,7 @@ module Admin
       EffectiveResources.authorize!(self, :admin, :mailchimp_sync)
 
       api = EffectiveMailchimp.api
-      merge_fields = current_user.class.new().mailchimp_merge_fields
-
-      Effective::MailchimpList.sync!(api: api, merge_fields: merge_fields)
+      Effective::MailchimpList.sync!(api: api)
       Effective::MailchimpCategory.sync!(api: api)
       Effective::MailchimpInterest.sync!(api: api)
 

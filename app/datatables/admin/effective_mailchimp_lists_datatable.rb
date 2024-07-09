@@ -31,6 +31,10 @@ module Admin
         ml.merge_fields.join(', ')
       end
 
+      col :member_count do |list|
+        list.member_count.to_i
+      end
+
       actions_col
     end
 

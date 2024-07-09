@@ -59,12 +59,13 @@ module EffectiveMailchimpUser
       member.assign_attributes(subscribed: subscribed)
     end
 
+    # For use in a rake task. Run the update right now
+    if now
+      return mailchimp_update!(only: mailchimp_lists)
+    end
+
     # This sets up the after_commit to run the mailchimp_update! job
     assign_attributes(mailchimp_user_form_action: true)
-
-    # For use in a rake task. Run the update right now
-    mailchimp_update! if now
-
     save!
   end
 
@@ -173,8 +174,7 @@ module EffectiveMailchimpUser
   # Pulls the current status from Mailchimp API into the Mailchimp List Member objects
   # Run before the mailchimp fields are displayed
   # Only run in the background when a user or admin clicks sync now
-  def mailchimp_sync!
-    api = EffectiveMailchimp.api
+  def mailchimp_sync!(api: EffectiveMailchimp.api)
     lists = Effective::MailchimpList.subscribable.sorted.to_a
 
     assign_attributes(mailchimp_user_form_action: nil)
@@ -198,12 +198,13 @@ module EffectiveMailchimpUser
 
   # Pushes the current Mailchimp List Member objects to Mailchimp when needed
   # Called in the background after a form submission that changes the user email/last_name/first_name or mailchimp subscriptions
-  def mailchimp_update!
-    api = EffectiveMailchimp.api
-
+  def mailchimp_update!(api: EffectiveMailchimp.api, only: [], except: [])
     assign_attributes(mailchimp_user_form_action: nil)
 
     mailchimp_list_members.each do |member|
+      next if only.present? && Array(only).exclude?(member.mailchimp_list)
+      next if except.present? && Array(except).include?(member.mailchimp_list)
+
       begin
         list_member = if member.mailchimp_id.blank? && member.subscribed?
           api.list_member_add(member)
