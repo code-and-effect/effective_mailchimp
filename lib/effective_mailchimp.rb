@@ -31,6 +31,14 @@ module EffectiveMailchimp
     api_key.blank?
   end
 
+  def self.lists_present?
+    Effective::MailchimpList.all.count > 0
+  end
+
+  def self.lists_blank?
+    Effective::MailchimpList.all.count == 0
+  end
+
   def self.User
     klass = user_class_name.constantize if user_class_name.present?
     klass ||= Tenant.User if defined?(Tenant)
