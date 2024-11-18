@@ -125,7 +125,7 @@ module EffectiveMailchimpUser
         'STATUS': membership&.statuses&.to_sentence,
         'NUMBER': membership&.number,
         'JOINED': membership&.joined_on&.strftime('%F'),
-        'FEESPAIDTO': mailchimp_membership_fees_paid_to(),
+        'FEESPAIDTO': mailchimp_membership_fees_paid_through_period()&.strftime('%F')
       )
     end
 
@@ -140,7 +140,7 @@ module EffectiveMailchimpUser
   end
 
   # Returns the maximum fees_paid_through_period of the membership and any deferred membership_period fees
-  def mailchimp_membership_fees_paid_to()
+  def mailchimp_membership_fees_paid_through_period
     periods = []
 
     # Find the fees_paid_through_period from any membership
@@ -159,7 +159,7 @@ module EffectiveMailchimpUser
     periods += fees.select { |fee| fee.membership_period_fee? }.map(&:fees_paid_through_period)
 
     # Return the maximum fees paid through period
-    periods.compact.max&.strftime('%F')
+    periods.compact.max
   end
 
   def mailchimp_subscribed_lists
