@@ -34,7 +34,8 @@ module EffectiveMailchimpUser
     }
 
     # The user updated the form
-    after_commit(if: -> { mailchimp_member_update_required? }) do
+    after_commit(if: -> { mailchimp_member_update_required? }, unless: -> { EffectiveMailchimp.supressed? || @mailchimp_member_update_enqueued }) do
+      @mailchimp_member_update_enqueued = true
       EffectiveMailchimpUpdateJob.perform_later(self) # This calls user.mailchimp_update! on the background
     end
   end
@@ -123,7 +124,8 @@ module EffectiveMailchimpUser
         'CATEGORY': membership&.categories&.to_sentence,
         'STATUS': membership&.statuses&.to_sentence,
         'NUMBER': membership&.number,
-        'JOINED': membership&.joined_on&.strftime('%F')
+        'JOINED': membership&.joined_on&.strftime('%F'),
+        'FEESPAIDTO': mailchimp_membership_fees_paid_to(),
       )
     end
 
@@ -135,6 +137,29 @@ module EffectiveMailchimpUser
     end
 
     atts
+  end
+
+  # Returns the maximum fees_paid_through_period of the membership and any deferred membership_period fees
+  def mailchimp_membership_fees_paid_to()
+    periods = []
+
+    # Find the fees_paid_through_period from any membership
+    if self.class.respond_to?(:effective_memberships_user?) && memberships.present?
+      membership = memberships.first() # Individual or organization membership
+      periods << membership&.fees_paid_through_period
+    end
+
+    # Find the fees_paid_through_period from any deferred membership fees
+    fees = if self.class.respond_to?(:effective_memberships_organization_user?) && organizations.present?
+      Effective::Fee.deferred.where(owner: [self, organizations])
+    else
+      Effective::Fee.deferred.where(owner: self)
+    end
+
+    periods += fees.select { |fee| fee.membership_period_fee? }.map(&:fees_paid_through_period)
+
+    # Return the maximum fees paid through period
+    periods.compact.max&.strftime('%F')
   end
 
   def mailchimp_subscribed_lists
