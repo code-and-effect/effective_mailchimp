@@ -254,6 +254,7 @@ module EffectiveMailchimpUser
 
   def mailchimp_member_update_required?
     return false unless mailchimp_user_form_action
+    return false if self.class.respond_to?(:effective_memberships_user) && membership&.mailchimp_membership_update_required?
 
     # Update if my email first name or last name change
     require_update = self.class.require_mailchimp_update_fields()
