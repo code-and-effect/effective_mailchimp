@@ -38,7 +38,7 @@ module Effective
     end
 
     def groups_url
-      "https://#{server}.admin.mailchimp.com/lists/dashboard/groups/"
+      "https://#{server}.admin.mailchimp.com/audience/groups/"
     end
 
     def contacts_url
