@@ -60,4 +60,20 @@ module EffectiveMailchimp
     [ :mailchimp_user_form_action, mailchimp_list_members_attributes: [:id, :mailchimp_list_id, :subscribed, interests: []] ]
   end
 
+  # Used to supress any background jobs during import processes
+  def self.supressed=(value)
+    Thread.current[:effective_mailchimp_supressed] = value
+  end
+
+  def self.supressed(&block)
+    Thread.current[:effective_mailchimp_supressed] = true
+    value = yield
+    Thread.current[:effective_mailchimp_supressed] = nil
+    value
+  end
+
+  def self.supressed?
+    Thread.current[:effective_mailchimp_supressed] == true
+  end
+
 end
