@@ -25,6 +25,20 @@ module Admin
       redirect_back(fallback_location: effective_mailchimp.admin_mailchimp_path)
     end
 
+    # Sync all users
+    def mailchimp_sync_users
+      EffectiveResources.authorize!(self, :admin, :mailchimp_sync_users)
+
+      user_class_name = current_user.class.name
+
+      # This calls user.mailchimp_sync! on all users
+      EffectiveMailchimpSyncUsersJob.perform_later(user_class_name) 
+
+      flash[:success] = "Successfully started mailchimp sync all users background job. Please wait a few minutes for it to complete. Check the logs for progress."
+
+      redirect_back(fallback_location: effective_mailchimp.admin_mailchimp_path)
+    end
+
     # Sync one user
     def mailchimp_sync_user
       resource = current_user.class.find(params[:id])

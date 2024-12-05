@@ -1,0 +1,2 @@
+- if EffectiveResources.authorized?(self, :admin, :mailchimp_sync_users)
+  %p= link_to 'Sync users from Mailchimp', effective_mailchimp.mailchimp_sync_users_admin_mailchimp_index_path, 'data-method': :post, class: 'btn btn-primary'

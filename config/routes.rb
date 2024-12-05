@@ -24,6 +24,7 @@ EffectiveMailchimp::Engine.routes.draw do
 
     resources :mailchimp, only: [] do
       post :mailchimp_sync, on: :collection
+      post :mailchimp_sync_users, on: :collection
       post :mailchimp_sync_user, on: :member
     end
 

@@ -20,12 +20,25 @@
       = link_to('campaigns', EffectiveMailchimp.api.campaigns_url, target: '_blank')
       at anytime.
 
-    %p To change the names or display order of items below, please visit the Mailchimp website then sync changes.
+    %hr
+
+    %p To change the names or display order of items below, visit the Mailchimp website and make any changes. Once done, return here and click Sync changes from Mailchimp.
 
     = render('admin/mailchimp/sync')
 
     %p.text-muted
-      %small This operation also creates the audience merge fields and updates the member and subscriber counts below.
+      %small This step also creates the audience merge fields and updates the member and subscriber counts below.
+
+    %hr
+
+    %p To assign user interests from Mailchimp, visit the Mailchimp website and import or update contacts info. Once done, return here and click Sync users from Mailchimp.
+
+    = render('admin/mailchimp/sync_users')
+
+    %p.text-muted
+      %small This step is only necessary after manually importing Contacts on the Mailchimp website. This will start a background job to mailchimp sync every user. You can mailchimp sync individual users from their Edit screen.
+
+  %hr
 
   = collapse('More settings') do
     %p

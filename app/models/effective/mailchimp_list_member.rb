@@ -41,7 +41,7 @@ module Effective
     scope :subscribed, -> { where(subscribed: true) }
 
     def to_s
-      mailchimp_list&.to_s || model_name.human
+      [mailchimp_list, user].compact.join(' - ').presence || model_name.human
     end
 
     def email
@@ -86,6 +86,7 @@ module Effective
         email_address: atts['email_address'],
         full_name: atts['full_name'],
         subscribed: (atts['status'] == 'subscribed'),
+        cannot_be_subscribed: ['unsubscribed', 'cleaned', 'archived'].include?(atts['status']),
         last_synced_at: Time.zone.now,
         interests: Hash(atts['interests']).select { |_, subscribed| subscribed == true }.keys
       )
