@@ -1,0 +1,12 @@
+%p.text-muted
+  %small
+    - mailchimp_last_synced_at = Effective::MailchimpList.maximum(:updated_at)
+
+    last synced with
+    = link_to 'Mailchimp', EffectiveMailchimp.api.admin_url, target: '_blank'
+
+    - if mailchimp_last_synced_at.present?
+      = time_ago_in_words(mailchimp_last_synced_at)
+      ago.
+    - else
+      never.

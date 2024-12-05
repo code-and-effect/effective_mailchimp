@@ -200,16 +200,18 @@ module EffectiveMailchimpUser
   # Run before the mailchimp fields are displayed
   # Only run in the background when a user or admin clicks sync now
   def mailchimp_sync!(api: EffectiveMailchimp.api)
-    lists = Effective::MailchimpList.subscribable.sorted.to_a
+    lists = Effective::MailchimpList.sorted.to_a
 
     assign_attributes(mailchimp_user_form_action: nil)
 
-    Timeout::timeout(lists.length * 2) do
-      lists.each do |mailchimp_list|
-        member = build_mailchimp_list_member(mailchimp_list: mailchimp_list)
+    mailchimp_with_retries do
+      Timeout::timeout(lists.length * 3) do
+        lists.each do |mailchimp_list|
+          member = build_mailchimp_list_member(mailchimp_list: mailchimp_list)
 
-        list_member = api.list_member(mailchimp_list, email) || {}
-        member.assign_mailchimp_attributes(list_member)
+          list_member = api.list_member(mailchimp_list, email) || {}
+          member.assign_mailchimp_attributes(list_member)
+        end
       end
     end
 
@@ -251,6 +253,20 @@ module EffectiveMailchimpUser
   end
 
   private
+
+  def mailchimp_with_retries(retries: 3, wait: 2, &block)
+    raise('expected a block') unless block_given?
+
+    begin
+      return yield
+    rescue Exception => e
+      if (retries -= 1) > 0
+        sleep(wait); retry
+      else
+        raise
+      end
+    end
+  end
 
   def mailchimp_member_update_required?
     return false unless mailchimp_user_form_action
