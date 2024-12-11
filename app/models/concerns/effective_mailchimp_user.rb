@@ -223,6 +223,11 @@ module EffectiveMailchimpUser
     save!
   end
 
+  def mailchimp_update_async!
+    @mailchimp_member_update_enqueued = true
+    EffectiveMailchimpUpdateJob.perform_later(self)
+  end
+
   # Pushes the current Mailchimp List Member objects to Mailchimp when needed
   # Called in the background after a form submission that changes the user email/last_name/first_name or mailchimp subscriptions
   def mailchimp_update!(api: EffectiveMailchimp.api, only: [], except: [])
