@@ -159,7 +159,7 @@ module Effective
       payload = {
         email_address: member.user.email,
         status: (member.subscribed ? 'subscribed' : 'unsubscribed'),
-        merge_fields: merge_fields.delete_if { |k, v| v.blank? },
+        merge_fields: merge_fields.transform_values { |value| value || '' },
         interests: member.interests_hash.presence
       }.compact
     end
