@@ -16,7 +16,7 @@ module EffectiveMailchimpUser
     def effective_mailchimp_user?; true; end
 
     def require_mailchimp_update_fields
-      ['email', 'last_name', 'first_name']
+      ['id', 'email', 'last_name', 'first_name']
     end
   end
 
@@ -33,10 +33,14 @@ module EffectiveMailchimpUser
       includes(mailchimp_list_members: [:mailchimp_list])
     }
 
+    # A new user is created
+    after_commit(on: [:create], if: -> { EffectiveMailchimp.api_present? }, unless: -> { EffectiveMailchimp.supressed? || @mailchimp_member_update_enqueued }) do
+      mailchimp_subscribe_to_force_subscribe!
+    end
+
     # The user updated the form
-    after_commit(if: -> { mailchimp_member_update_required? }, unless: -> { EffectiveMailchimp.supressed? || @mailchimp_member_update_enqueued }) do
-      @mailchimp_member_update_enqueued = true
-      EffectiveMailchimpUpdateJob.perform_later(self) # This calls user.mailchimp_update! on the background
+    after_commit(on: [:update], if: -> { mailchimp_member_update_required? }, unless: -> { EffectiveMailchimp.supressed? || @mailchimp_member_update_enqueued }) do
+      mailchimp_update_async!
     end
   end
 
@@ -257,6 +261,14 @@ module EffectiveMailchimpUser
     save!
   end
 
+  # Subscribe to force_subscribe lists
+  def mailchimp_subscribe_to_force_subscribe!
+    mailchimp_lists = Effective::MailchimpList.where(force_subscribe: true).to_a
+    return unless mailchimp_lists.present?
+
+    mailchimp_subscribe!(mailchimp_lists)
+  end
+
   private
 
   def mailchimp_with_retries(retries: 3, wait: 2, &block)
@@ -274,6 +286,8 @@ module EffectiveMailchimpUser
   end
 
   def mailchimp_member_update_required?
+    return false unless EffectiveMailchimp.api_present?
+
     return false unless mailchimp_user_form_action
     return false if self.class.respond_to?(:effective_memberships_user) && membership&.mailchimp_membership_update_required?
 
