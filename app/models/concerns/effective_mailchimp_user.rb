@@ -237,6 +237,8 @@ module EffectiveMailchimpUser
   def mailchimp_update!(api: EffectiveMailchimp.api, only: [], except: [])
     assign_attributes(mailchimp_user_form_action: nil)
 
+    return if mailchimp_member_update_blocked?
+
     mailchimp_list_members.each do |member|
       next if only.present? && Array(only).exclude?(member.mailchimp_list)
       next if except.present? && Array(except).include?(member.mailchimp_list)
@@ -283,6 +285,11 @@ module EffectiveMailchimpUser
         raise
       end
     end
+  end
+
+  def mailchimp_member_update_blocked?
+    return false if try(:email).to_s.start_with?('user') && try(:email).to_s.end_with?('.site')
+    true
   end
 
   def mailchimp_member_update_required?
