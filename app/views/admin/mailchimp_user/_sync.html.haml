@@ -1,6 +1,11 @@
 - user = f.object
 
 - if user.persisted?
+  - if user.mailchimp_list_members.any?(&:cannot_be_subscribed?)
+    %p.text-danger
+      %small
+        This user has been marked as a Compliance State by Mailchimp and cannot be subscribed.
+
   %p.text-muted
     %small
       last synced with

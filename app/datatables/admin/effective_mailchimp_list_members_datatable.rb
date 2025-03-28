@@ -21,6 +21,7 @@ module Admin
       col :email_address
       col :full_name
       col :subscribed
+      col :cannot_be_subscribed
 
       col :interests, visible: false
       col :mailchimp_interests, search: { collection: Effective::MailchimpInterest.order(:name), fuzzy: true }
