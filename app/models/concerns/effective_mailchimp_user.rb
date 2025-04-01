@@ -288,8 +288,8 @@ module EffectiveMailchimpUser
   end
 
   def mailchimp_member_update_blocked?
-    return false if try(:email).to_s.start_with?('user') && try(:email).to_s.end_with?('.site')
-    true
+    return true if try(:email).to_s.start_with?('user') && try(:email).to_s.end_with?('.site')
+    false
   end
 
   def mailchimp_member_update_required?
