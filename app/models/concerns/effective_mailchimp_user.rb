@@ -30,7 +30,7 @@ module EffectiveMailchimpUser
     accepts_nested_attributes_for :mailchimp_lists, allow_destroy: true
 
     scope :deep_effective_mailchimp_user, -> { 
-      includes(mailchimp_list_members: [:mailchimp_list])
+      includes(mailchimp_list_members: [mailchimp_list: :mailchimp_categories])
     }
 
     # A new user is created
