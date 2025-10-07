@@ -254,11 +254,13 @@ module EffectiveMailchimpUser
       rescue MailchimpMarketing::ApiError => e
         message = e.to_s.downcase
 
-        if message.include?("cannot be subscribed") || message.include?("deleted") || message.include?("unsubscribed")
+        if message.include?("cannot be subscribed") || message.include?("deleted") || message.include?("unsubscribed") || message.include?("archived") || message.include?("cleaned")
           member.assign_mailchimp_cannot_be_subscribed
-        elsif message.include?("already a list member")
+        elsif message.include?("already a list member") || message.include?("already in this list")
           existing = api.list_member(member.mailchimp_list, member.user.email)
           member.assign_mailchimp_attributes(existing) if existing.present?
+        elsif message.include?("could not be found")
+          # Nothing to do
         else
           raise(e)
         end
