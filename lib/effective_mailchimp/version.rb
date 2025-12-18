@@ -1,3 +1,3 @@
 module EffectiveMailchimp
-  VERSION = '0.11.7'.freeze
+  VERSION = '0.12.0'.freeze
 end
