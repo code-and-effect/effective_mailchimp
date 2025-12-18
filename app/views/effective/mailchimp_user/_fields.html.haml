@@ -1,5 +1,3 @@
-= f.hidden_field :mailchimp_user_form_action, value: true
-
 = f.fields_for :mailchimp_list_members, f.object.build_mailchimp_list_members do |fmlm|
   - mailchimp_list = fmlm.object.mailchimp_list
   - next if mailchimp_list.blank?

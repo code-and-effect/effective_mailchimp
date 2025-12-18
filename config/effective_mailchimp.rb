@@ -11,4 +11,6 @@ EffectiveMailchimp.setup do |config|
 
   # Assign the User class name. For use in determining all merge_fields
   # config.user_class_name = 'User'
+
+  config.silence_api_errors = false
 end

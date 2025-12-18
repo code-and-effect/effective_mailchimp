@@ -108,8 +108,8 @@ module Effective
     def add_merge_field(id, name:, type: :text)
       raise("invalid mailchimp merge key: #{name}. Must be 10 or fewer characters") if name.to_s.length > 10
 
-      return if sandbox_mode?
       Rails.logger.info "[effective_mailchimp] Add List Merge Field #{name}" if debug?
+      return if sandbox_mode?
 
       payload = { name: name.to_s.titleize, tag: name.to_s, type: type }
 
@@ -124,8 +124,8 @@ module Effective
     def list_member_add(member)
       raise('expected an Effective::MailchimpListMember') unless member.kind_of?(Effective::MailchimpListMember)
 
-      return if sandbox_mode?
       Rails.logger.info "[effective_mailchimp] Add List Member" if debug?
+      return if sandbox_mode?
 
       # See if they exist somehow
       existing = list_member(member.mailchimp_list, member.user.email)
@@ -143,8 +143,8 @@ module Effective
     def list_member_update(member)
       raise('expected an Effective::MailchimpListMember') unless member.kind_of?(Effective::MailchimpListMember)
 
-      return if sandbox_mode?
       Rails.logger.info "[effective_mailchimp] Update List Member" if debug?
+      return if sandbox_mode?
 
       payload = list_member_payload(member)
       client.lists.update_list_member(member.mailchimp_list.mailchimp_id, member.email, payload)

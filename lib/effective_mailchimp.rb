@@ -9,7 +9,7 @@ module EffectiveMailchimp
     [
       :mailchimp_lists_table_name, :mailchimp_list_members_table_name, :mailchimp_categories_table_name, :mailchimp_interests_table_name,
       :layout,
-      :api_key, :sandbox_mode, :user_class_name
+      :api_key, :sandbox_mode, :user_class_name, :silence_api_errors
     ]
   end
 
@@ -39,6 +39,10 @@ module EffectiveMailchimp
     Effective::MailchimpList.all.count == 0
   end
 
+  def self.silence_api_errors?
+    !!silence_api_errors
+  end
+
   def self.User
     klass = user_class_name.constantize if user_class_name.present?
     klass ||= Tenant.User if defined?(Tenant)
@@ -57,7 +61,7 @@ module EffectiveMailchimp
   end
 
   def self.permitted_params
-    [ :mailchimp_user_form_action, mailchimp_list_members_attributes: [:id, :mailchimp_list_id, :subscribed, interests: []] ]
+    [ mailchimp_list_members_attributes: [:id, :mailchimp_list_id, :subscribed, interests: []] ]
   end
 
   # Used to supress any background jobs during import processes
