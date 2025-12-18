@@ -7,7 +7,9 @@ module Effective
 
       EffectiveResources.authorize!(self, :mailchimp_sync_user, current_user)
 
-      resource.mailchimp_sync!
+      api = EffectiveMailchimp.api
+      resource.mailchimp_sync!(api: api)
+      resource.mailchimp_update!(api: api)
 
       flash[:success] = "Successfully synced mailchimp"
 

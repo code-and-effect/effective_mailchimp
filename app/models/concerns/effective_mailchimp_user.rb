@@ -21,8 +21,6 @@ module EffectiveMailchimpUser
   end
 
   included do
-    attr_accessor :mailchimp_user_form_action
-
     has_many :mailchimp_list_members, -> { Effective::MailchimpListMember.sorted }, as: :user, class_name: 'Effective::MailchimpListMember', dependent: :destroy
     accepts_nested_attributes_for :mailchimp_list_members, allow_destroy: true
 
@@ -70,7 +68,6 @@ module EffectiveMailchimpUser
     end
 
     # This sets up the after_commit to run the mailchimp_update! job
-    assign_attributes(mailchimp_user_form_action: true)
     save!
   end
 
@@ -86,8 +83,6 @@ module EffectiveMailchimpUser
     end
 
     # This sets up the after_commit to run the mailchimp_update! job
-    assign_attributes(mailchimp_user_form_action: true)
-
     save!
   end
 
@@ -206,8 +201,6 @@ module EffectiveMailchimpUser
   def mailchimp_sync!(api: EffectiveMailchimp.api)
     lists = Effective::MailchimpList.sorted.to_a
 
-    assign_attributes(mailchimp_user_form_action: nil)
-
     mailchimp_with_retries do
       Timeout::timeout(lists.length * 3) do
         lists.each do |mailchimp_list|
@@ -224,7 +217,7 @@ module EffectiveMailchimpUser
       member.mark_for_destruction unless list.present?
     end
 
-    save!
+    without_mailchimp_update_async { save! }
   end
 
   def mailchimp_update_async!
@@ -235,8 +228,6 @@ module EffectiveMailchimpUser
   # Pushes the current Mailchimp List Member objects to Mailchimp when needed
   # Called in the background after a form submission that changes the user email/last_name/first_name or mailchimp subscriptions
   def mailchimp_update!(api: EffectiveMailchimp.api, only: [], except: [])
-    assign_attributes(mailchimp_user_form_action: nil)
-
     return if mailchimp_member_update_blocked?
 
     mailchimp_list_members.each do |member|
@@ -261,13 +252,13 @@ module EffectiveMailchimpUser
           member.assign_mailchimp_attributes(existing) if existing.present?
         elsif message.include?("could not be found")
           # Nothing to do
-        else
-          raise(e)
         end
+
+        raise(e) unless EffectiveMailchimp.silence_api_errors?
       end
     end
 
-    save!
+    without_mailchimp_update_async { save! }
   end
 
   # Subscribe to force_subscribe lists
@@ -276,6 +267,19 @@ module EffectiveMailchimpUser
     return unless mailchimp_lists.present?
 
     mailchimp_subscribe!(mailchimp_lists)
+  end
+
+  def without_mailchimp_update_async(&block)
+    raise('expected a block') unless block_given?
+
+    before = @mailchimp_member_update_enqueued
+
+    begin
+      @mailchimp_member_update_enqueued = true
+      yield
+    ensure
+      @mailchimp_member_update_enqueued = before
+    end
   end
 
   private
@@ -302,13 +306,15 @@ module EffectiveMailchimpUser
   def mailchimp_member_update_required?
     return false unless EffectiveMailchimp.api_present?
 
-    return false unless mailchimp_user_form_action
-    return false if self.class.respond_to?(:effective_memberships_user) && membership&.mailchimp_membership_update_required?
+    #return false if self.class.respond_to?(:effective_memberships_user) && membership&.mailchimp_membership_update_required?
 
     # Update if my email first name or last name change
     require_update = self.class.require_mailchimp_update_fields()
     return true if (changes.keys & require_update).present?
     return true if (previous_changes.keys & require_update).present?
+
+    # Update if any of my addresses change
+    return true if addresses.any? { |a| a.changes.present? || a.previous_changes.present? || a.marked_for_destruction? }
 
     # Update if any of my mailchimp list members changed
     # which happens when I submit a form and change the Mailchimp values
