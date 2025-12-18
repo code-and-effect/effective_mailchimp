@@ -3,7 +3,7 @@
 - if user.persisted?
   %p.text-muted
     %small
-      last synced with
+      Last synced with
       = link_to 'Mailchimp', EffectiveMailchimp.api.admin_url, target: '_blank'
       - if user.mailchimp_last_synced_at.present?
         = time_ago_in_words(user.mailchimp_last_synced_at)
