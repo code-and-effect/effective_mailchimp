@@ -252,9 +252,14 @@ module EffectiveMailchimpUser
           member.assign_mailchimp_attributes(existing) if existing.present?
         elsif message.include?("could not be found")
           # Nothing to do
+        else
+          # Nothing to do.
         end
 
-        raise(e) unless EffectiveMailchimp.silence_api_errors?
+        if defined?(ExceptionNotifier) && !EffectiveMailchimp.silence_api_errors?
+          ExceptionNotifier.notify_exception(e, data: { user_id: id || 'nil' })
+        end
+
       end
     end
 
