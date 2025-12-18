@@ -11,7 +11,7 @@
 
     - # For each group / mailchimp_category
     - mailchimp_list.mailchimp_categories.each do |mailchimp_category|
-      - mailchimp_interests = mailchimp_category.mailchimp_interests
+      - mailchimp_interests = mailchimp_category.mailchimp_interests.sorted
 
       - # Force subscription of each interest
       - forced = mailchimp_interests.select { |mi| mi.force_subscribe? }
