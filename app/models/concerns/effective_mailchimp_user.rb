@@ -161,6 +161,10 @@ module EffectiveMailchimpUser
     periods.compact.max
   end
 
+  def mailchimp_cannot_be_subscribed?
+    mailchimp_list_members.any?(&:cannot_be_subscribed?)
+  end
+
   def mailchimp_subscribed_lists
     mailchimp_list_members.select(&:subscribed?).map(&:mailchimp_list)
   end
