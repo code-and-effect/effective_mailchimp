@@ -33,7 +33,7 @@ module EffectiveMailchimpUser
 
     # A new user is created
     after_commit(on: [:create], if: -> { EffectiveMailchimp.api_present? }, unless: -> { EffectiveMailchimp.supressed? || @mailchimp_member_update_enqueued }) do
-      mailchimp_subscribe_to_force_subscribe!
+      mailchimp_subscribe_all!
     end
 
     # The user updated the form
@@ -270,12 +270,30 @@ module EffectiveMailchimpUser
     without_mailchimp_update_async { save! }
   end
 
+  # No longer used. We use mailchimp_subscribe_all! instead
   # Subscribe to force_subscribe lists
-  def mailchimp_subscribe_to_force_subscribe!
-    mailchimp_lists = Effective::MailchimpList.where(force_subscribe: true).to_a
-    return unless mailchimp_lists.present?
+  # def mailchimp_subscribe_to_force_subscribe!
+  #   mailchimp_lists = Effective::MailchimpList.where(force_subscribe: true).to_a
+  #   return unless mailchimp_lists.present?
 
-    mailchimp_subscribe!(mailchimp_lists)
+  #   mailchimp_subscribe!(mailchimp_lists)
+  # end
+
+  def mailchimp_subscribe_all!
+    mailchimp_lists = Effective::MailchimpList.subscribable.sorted.all
+
+    mailchimp_lists.each do |mailchimp_list|
+      member = build_mailchimp_list_member(mailchimp_list: mailchimp_list)
+      member.assign_attributes(subscribed: true)
+
+      mailchimp_list.mailchimp_categories.each do |mailchimp_category|
+        mailchimp_interests = mailchimp_category.mailchimp_interests
+        mailchimp_interests.each { |mailchimp_interest| member.build_interests(mailchimp_interest) }
+      end
+    end
+
+    # This sets up the after_commit to run the mailchimp_update! job
+    save!
   end
 
   def without_mailchimp_update_async(&block)
