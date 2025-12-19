@@ -3,7 +3,7 @@ module Effective
     self.table_name = (EffectiveMailchimp.mailchimp_categories_table_name || :mailchimp_categories).to_s
 
     belongs_to :mailchimp_list
-    has_many :mailchimp_interests
+    has_many :mailchimp_interests, -> { Effective::MailchimpInterest.sorted }, class_name: 'Effective::MailchimpInterest', inverse_of: :mailchimp_category
 
     effective_resource do
       mailchimp_id      :string     # ID of this Mailchimp InterestCategory
