@@ -280,7 +280,8 @@ module EffectiveMailchimpUser
   # end
 
   def mailchimp_subscribe_all!
-    mailchimp_lists = Effective::MailchimpList.subscribable.sorted.all
+    mailchimp_lists = Effective::MailchimpList.subscribable.sorted.all.to_a
+    return unless mailchimp_lists.present?
 
     mailchimp_lists.each do |mailchimp_list|
       member = build_mailchimp_list_member(mailchimp_list: mailchimp_list)
