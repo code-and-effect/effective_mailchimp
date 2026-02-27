@@ -118,7 +118,7 @@ module Effective
           user.mailchimp_subscribe!(self, subscribed: true, now: true)
         rescue => e
           EffectiveLogger.error(e.message, associated: user) if defined?(EffectiveLogger)
-          ExceptionNotifier.notify_exception(e, data: { user_id: user.id, mailchimp_list_id: id }) if defined?(ExceptionNotifier)
+          EffectiveResources.send_error(e, user_id: user.id, mailchimp_list_id: id)
           raise(e) if Rails.env.test? || Rails.env.development?
         end
       end
