@@ -15,7 +15,7 @@ class EffectiveMailchimpSyncUsersJob < ApplicationJob
         user.mailchimp_update!(api: api)
       rescue => e
         EffectiveLogger.error(e.message, associated: user) if defined?(EffectiveLogger)
-        ExceptionNotifier.notify_exception(e, data: { user_id: user.id }) if defined?(ExceptionNotifier)
+        EffectiveResources.send_error(e, user_id: user.id)
       end
     end
 

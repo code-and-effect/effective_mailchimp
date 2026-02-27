@@ -260,8 +260,8 @@ module EffectiveMailchimpUser
           # Nothing to do.
         end
 
-        if defined?(ExceptionNotifier) && !EffectiveMailchimp.silence_api_errors?
-          ExceptionNotifier.notify_exception(e, data: { user_id: id || 'nil' })
+        if !EffectiveMailchimp.silence_api_errors?
+          EffectiveResources.send_error(e, user_id: id || 'nil')
         end
 
       end
