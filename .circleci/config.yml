@@ -1,30 +1,31 @@
 version: 2.1 # use CircleCI 2.1
 
+# Orbs and containers control the docker image each job is run in.
 orbs:
-  ruby: circleci/ruby@2.0.0
-  browser-tools: circleci/browser-tools@1.4.1
+  ruby: circleci/ruby@2.5.3 # versions: https://circleci.com/developer/orbs/orb/circleci/ruby
+  browser-tools: circleci/browser-tools@1.4.8 # versions: https://circleci.com/developer/orbs/orb/circleci/browser-tools
 
-jobs: # a collection of steps
-  build: # runs not using Workflows must have a `build` job as entry point
-    parallelism: 1 # run three instances of this job in parallel
-    docker: # run the steps with Docker
-    # Find your ruby image: https://hub.docker.com/r/circleci/ruby/tags
-      - image: cimg/ruby:3.1.2-browsers
-        environment: # environment variables for primary container
-          BUNDLE_JOBS: 3
-          BUNDLE_RETRY: 3
-          BUNDLE_PATH: vendor/bundle
-          PGHOST: 127.0.0.1
-          PGUSER: postgres
-          RAILS_ENV: test
-          NODE_ENV: test
-      - image: cimg/postgres:15.1 # database image
-        environment: # environment variables for database
-          POSTGRES_USER: postgres
-          POSTGRES_DB: effective_boilerplate
-          POSTGRES_PASSWORD: ""
-    steps: # a collection of executable commands
-      - checkout # special step to check out source code to working directory
+container: &container
+  docker:
+    - image: cimg/ruby:3.3.1-browsers # images: https://hub.docker.com/r/circleci/ruby/tags
+      environment:
+        RAILS_ENV: test
+        SSL_CERT_FILE: /etc/ssl/certs/ca-certificates.crt
+        SSL_CERT_DIR: /etc/ssl/certs
+    - image: cimg/postgres:15.1
+      command: postgres -c max_connections=300
+
+workflows:
+  version: 2
+  test:
+    jobs:
+      - test
+
+jobs:
+  test:
+    <<: *container
+    steps:
+      - checkout
 
       - run:
           name: Configure Bundler
@@ -34,19 +35,22 @@ jobs: # a collection of steps
             gem install bundler
 
       - restore_cache:
-          keys:
-            - effective_boilerplate-{{ checksum "Gemfile.lock" }}
+          key: effective-gem-{{ checksum "Gemfile.lock" }}
 
       - run:
           name: Install Bundle
           command: |
-            bundle install
+            bundle install --jobs=4 --retry=3
 
       - save_cache:
-          key: effective_boilerplate-{{ checksum "Gemfile.lock" }}
+          key: effective-gem-{{ checksum "Gemfile.lock" }}
           paths:
             - ./vendor/bundle
 
       - run:
-          name: Unit Tests
+          name: Run Unit Tests
           command: bundle exec rails test
+
+      - run:
+          name: All Tests Passed
+          command: echo "All Tests Passed"
