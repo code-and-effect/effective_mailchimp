@@ -127,17 +127,9 @@ module Effective
       Rails.logger.info "[effective_mailchimp] Add List Member" if debug?
       return if sandbox_mode?
 
-      # See if they exist somehow
-      existing = list_member(member.mailchimp_list, member.user.email)
-
-      if existing.present?
-        member.assign_attributes(mailchimp_id: existing['id'])
-        return list_member_update(member)
-      end
-
-      # Actually add
+      # Actually add or update
       payload = list_member_payload(member)
-      client.lists.add_list_member(member.mailchimp_list.mailchimp_id, payload)
+      client.lists.set_list_member(member.mailchimp_list.mailchimp_id, member.email, payload)
     end
 
     def list_member_update(member)
