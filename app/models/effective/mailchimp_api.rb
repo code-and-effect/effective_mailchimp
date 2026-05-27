@@ -76,14 +76,14 @@ module Effective
     def categories(list_id)
       Rails.logger.info "[effective_mailchimp] Index Interest Categories" if debug?
 
-      response = client.lists.get_list_interest_categories(list_id.try(:mailchimp_id) || list_id)
+      response = client.lists.get_list_interest_categories(list_id.try(:mailchimp_id) || list_id, count: 1000)
       Array(response['categories']) - [nil, '', {}]
     end
 
     def interests(list_id, category_id)
       Rails.logger.info "[effective_mailchimp] Index Interest Category Interests" if debug?
 
-      response = client.lists.list_interest_category_interests(list_id, category_id)
+      response = client.lists.list_interest_category_interests(list_id, category_id, count: 1000)
       Array(response['interests']) - [nil, '', {}]
     end
 
