@@ -3,6 +3,7 @@
 # https://mailchimp.com/developer/marketing/api/
 
 require 'MailchimpMarketing'
+require 'digest'
 
 module Effective
   class MailchimpApi
@@ -92,7 +93,7 @@ module Effective
       Rails.logger.info "[effective_mailchimp] Get List Member" if debug?
 
       begin
-        client.lists.get_list_member(id.try(:mailchimp_id) || id, email)
+        client.lists.get_list_member(id.try(:mailchimp_id) || id, subscriber_hash(email))
       rescue MailchimpMarketing::ApiError => e
         {}
       end
@@ -129,7 +130,7 @@ module Effective
 
       # Actually add or update
       payload = list_member_payload(member)
-      client.lists.set_list_member(member.mailchimp_list.mailchimp_id, member.email, payload)
+      client.lists.set_list_member(member.mailchimp_list.mailchimp_id, subscriber_hash(member.user.email), payload)
     end
 
     def list_member_update(member)
@@ -139,7 +140,8 @@ module Effective
       return if sandbox_mode?
 
       payload = list_member_payload(member)
-      client.lists.update_list_member(member.mailchimp_list.mailchimp_id, member.email, payload)
+      hash = member.mailchimp_id.presence || subscriber_hash(member.email)
+      client.lists.update_list_member(member.mailchimp_list.mailchimp_id, hash, payload)
     end
 
     def list_member_payload(member)
@@ -154,6 +156,13 @@ module Effective
         merge_fields: merge_fields.transform_values { |value| value || '' },
         interests: member.interests_hash.presence
       }.compact
+    end
+
+    # Mailchimp identifies a list member by the MD5 hash of their lowercase email address
+    def subscriber_hash(email)
+      raise('expected an email') unless email.to_s.include?('@')
+
+      Digest::MD5.hexdigest(email.to_s.downcase.strip)
     end
 
   end
