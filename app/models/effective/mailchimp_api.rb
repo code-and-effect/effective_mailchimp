@@ -128,8 +128,8 @@ module Effective
       Rails.logger.info "[effective_mailchimp] Add List Member" if debug?
       return if sandbox_mode?
 
-      # Actually add or update
-      payload = list_member_payload(member)
+      # Actually add or update. set_list_member applies status_if_new when the contact is new
+      payload = list_member_payload(member).merge(status_if_new: list_member_status(member))
       client.lists.set_list_member(member.mailchimp_list.mailchimp_id, subscriber_hash(member.user.email), payload)
     end
 
@@ -152,7 +152,7 @@ module Effective
 
       payload = {
         email_address: member.user.email,
-        status: (member.subscribed ? 'subscribed' : 'unsubscribed'),
+        status: list_member_status(member),
         merge_fields: merge_fields.transform_values { |value| value || '' },
         interests: member.interests_hash.presence
       }.compact
@@ -163,6 +163,10 @@ module Effective
       raise('expected an email') unless email.to_s.include?('@')
 
       Digest::MD5.hexdigest(email.to_s.downcase.strip)
+    end
+
+    def list_member_status(member)
+      member.subscribed ? 'subscribed' : 'unsubscribed'
     end
 
   end
