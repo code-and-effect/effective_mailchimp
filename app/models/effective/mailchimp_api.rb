@@ -3,7 +3,6 @@
 # https://mailchimp.com/developer/marketing/api/
 
 require 'MailchimpMarketing'
-require 'digest'
 
 module Effective
   class MailchimpApi
@@ -76,14 +75,14 @@ module Effective
     def categories(list_id)
       Rails.logger.info "[effective_mailchimp] Index Interest Categories" if debug?
 
-      response = client.lists.get_list_interest_categories(list_id.try(:mailchimp_id) || list_id, count: 1000)
+      response = client.lists.get_list_interest_categories(list_id.try(:mailchimp_id) || list_id)
       Array(response['categories']) - [nil, '', {}]
     end
 
     def interests(list_id, category_id)
       Rails.logger.info "[effective_mailchimp] Index Interest Category Interests" if debug?
 
-      response = client.lists.list_interest_category_interests(list_id, category_id, count: 1000)
+      response = client.lists.list_interest_category_interests(list_id, category_id)
       Array(response['interests']) - [nil, '', {}]
     end
 
@@ -93,7 +92,7 @@ module Effective
       Rails.logger.info "[effective_mailchimp] Get List Member" if debug?
 
       begin
-        client.lists.get_list_member(id.try(:mailchimp_id) || id, subscriber_hash(email))
+        client.lists.get_list_member(id.try(:mailchimp_id) || id, email)
       rescue MailchimpMarketing::ApiError => e
         {}
       end
@@ -128,9 +127,9 @@ module Effective
       Rails.logger.info "[effective_mailchimp] Add List Member" if debug?
       return if sandbox_mode?
 
-      # Actually add or update. set_list_member applies status_if_new when the contact is new
-      payload = list_member_payload(member).merge(status_if_new: list_member_status(member))
-      client.lists.set_list_member(member.mailchimp_list.mailchimp_id, subscriber_hash(member.user.email), payload)
+      # Actually add or update
+      payload = list_member_payload(member)
+      client.lists.set_list_member(member.mailchimp_list.mailchimp_id, member.email, payload)
     end
 
     def list_member_update(member)
@@ -140,8 +139,7 @@ module Effective
       return if sandbox_mode?
 
       payload = list_member_payload(member)
-      hash = member.mailchimp_id.presence || subscriber_hash(member.email)
-      client.lists.update_list_member(member.mailchimp_list.mailchimp_id, hash, payload)
+      client.lists.update_list_member(member.mailchimp_list.mailchimp_id, member.email, payload)
     end
 
     def list_member_payload(member)
@@ -152,21 +150,10 @@ module Effective
 
       payload = {
         email_address: member.user.email,
-        status: list_member_status(member),
+        status: (member.subscribed ? 'subscribed' : 'unsubscribed'),
         merge_fields: merge_fields.transform_values { |value| value || '' },
         interests: member.interests_hash.presence
       }.compact
-    end
-
-    # Mailchimp identifies a list member by the MD5 hash of their lowercase email address
-    def subscriber_hash(email)
-      raise('expected an email') unless email.to_s.include?('@')
-
-      Digest::MD5.hexdigest(email.to_s.downcase.strip)
-    end
-
-    def list_member_status(member)
-      member.subscribed ? 'subscribed' : 'unsubscribed'
     end
 
   end
