@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    effective_mailchimp (0.13.2)
+    effective_mailchimp (0.13.0)
       MailchimpMarketing
       effective_bootstrap
       effective_datatables (>= 4.0.0)
@@ -391,6 +391,7 @@ DEPENDENCIES
   effective_test_bot
   haml-rails
   pry-byebug
+  psych
   sqlite3
   wicked
 
