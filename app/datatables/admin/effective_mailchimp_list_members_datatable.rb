@@ -29,7 +29,7 @@ module Admin
       col :last_synced_at
 
       actions_col do |member|
-        dropdown_link_to('Edit', "/admin/users/#{member.user.to_param}/edit#tab-mailchimp", 'data-turbolinks': false)
+        dropdown_link_to('Edit', "/admin/users/#{member.user.to_param}/edit#tab-mailchimp", 'data-turbolinks': false, 'data-turbo': false)
       end
     end
 
