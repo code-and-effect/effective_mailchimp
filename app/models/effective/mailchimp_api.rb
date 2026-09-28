@@ -3,6 +3,7 @@
 # https://mailchimp.com/developer/marketing/api/
 
 require 'MailchimpMarketing'
+require 'digest'
 
 module Effective
   class MailchimpApi
@@ -92,8 +93,9 @@ module Effective
       Rails.logger.info "[effective_mailchimp] Get List Member" if debug?
 
       begin
-        client.lists.get_list_member(id.try(:mailchimp_id) || id, email)
+        client.lists.get_list_member(id.try(:mailchimp_id) || id, subscriber_hash(email))
       rescue MailchimpMarketing::ApiError => e
+        raise unless e.status == 404
         {}
       end
     end
@@ -128,8 +130,17 @@ module Effective
       return if sandbox_mode?
 
       # Actually add or update
-      payload = list_member_payload(member)
-      client.lists.set_list_member(member.mailchimp_list.mailchimp_id, member.email, payload)
+      payload = list_member_payload(member).merge(status_if_new: (member.subscribed? ? 'subscribed' : 'unsubscribed'))
+      list_id = member.mailchimp_list.mailchimp_id
+      hash = subscriber_hash(member.user.email)
+
+      begin
+        client.lists.set_list_member(list_id, hash, payload)
+      rescue MailchimpMarketing::ApiError => e
+        raise unless e.status == 400 && e.to_s.include?('Member Exists')
+
+        client.lists.update_list_member(list_id, hash, payload.except(:status_if_new))
+      end
     end
 
     def list_member_update(member)
@@ -139,7 +150,8 @@ module Effective
       return if sandbox_mode?
 
       payload = list_member_payload(member)
-      client.lists.update_list_member(member.mailchimp_list.mailchimp_id, member.email, payload)
+      hash = member.mailchimp_id.presence || subscriber_hash(member.email)
+      client.lists.update_list_member(member.mailchimp_list.mailchimp_id, hash, payload)
     end
 
     def list_member_payload(member)
@@ -154,6 +166,12 @@ module Effective
         merge_fields: merge_fields.transform_values { |value| value || '' },
         interests: member.interests_hash.presence
       }.compact
+    end
+
+    def subscriber_hash(email)
+      raise('expected an email') unless email.to_s.include?('@')
+
+      Digest::MD5.hexdigest(email.to_s.strip.downcase)
     end
 
   end
