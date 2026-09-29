@@ -248,19 +248,17 @@ module EffectiveMailchimpUser
         member.assign_mailchimp_attributes(list_member) if list_member.present?
       rescue MailchimpMarketing::ApiError => e
         message = e.to_s.downcase
+        compliance_error = e.status == 400 && message.include?('member in compliance state')
 
-        if message.include?("cannot be subscribed") || message.include?("deleted") || message.include?("unsubscribed") || message.include?("archived") || message.include?("cleaned")
+        if compliance_error || message.include?("cannot be subscribed") || message.include?("deleted") || message.include?("unsubscribed") || message.include?("archived") || message.include?("cleaned")
           member.assign_mailchimp_cannot_be_subscribed
-        elsif message.include?("already a list member") || message.include?("already in this list")
-          existing = api.list_member(member.mailchimp_list, member.user.email)
-          member.assign_mailchimp_attributes(existing) if existing.present?
         elsif message.include?("could not be found")
           # Nothing to do
         else
           # Nothing to do.
         end
 
-        if !EffectiveMailchimp.silence_api_errors?
+        if !EffectiveMailchimp.silence_api_errors? && !compliance_error
           EffectiveResources.send_error(e, user_id: id || 'nil')
         end
 
