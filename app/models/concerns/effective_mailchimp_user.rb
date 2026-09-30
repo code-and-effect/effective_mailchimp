@@ -237,6 +237,10 @@ module EffectiveMailchimpUser
     mailchimp_list_members.each do |member|
       next if only.present? && Array(only).exclude?(member.mailchimp_list)
       next if except.present? && Array(except).include?(member.mailchimp_list)
+      if member.cannot_be_subscribed? && member.email_address.to_s.strip.casecmp?(email.to_s.strip)
+        member.subscribed = false
+        next
+      end
 
       begin
         list_member = if member.mailchimp_id.blank? && member.subscribed?
@@ -247,10 +251,13 @@ module EffectiveMailchimpUser
 
         member.assign_mailchimp_attributes(list_member) if list_member.present?
       rescue MailchimpMarketing::ApiError => e
-        message = e.to_s.downcase
-        compliance_error = e.status == 400 && message.include?('member in compliance state')
+        body = Effective::MailchimpApi.error_body(e)
+        field_messages = Array(body['errors']).filter_map { |field| field['message'] if field.kind_of?(Hash) }
+        message = [body['title'], body['detail'], *field_messages].join(' ').downcase
+        compliance_error = Effective::MailchimpApi.compliance_error?(e)
+        cleaned_error = Effective::MailchimpApi.cleaned_member_error?(e)
 
-        if compliance_error || message.include?("cannot be subscribed") || message.include?("deleted") || message.include?("unsubscribed") || message.include?("archived") || message.include?("cleaned")
+        if compliance_error || cleaned_error || message.include?("cannot be subscribed") || message.include?("deleted") || message.include?("unsubscribed") || message.include?("archived")
           member.assign_mailchimp_cannot_be_subscribed
         elsif message.include?("could not be found")
           # Nothing to do
@@ -258,7 +265,7 @@ module EffectiveMailchimpUser
           # Nothing to do.
         end
 
-        if !EffectiveMailchimp.silence_api_errors? && !compliance_error
+        if !EffectiveMailchimp.silence_api_errors? && !compliance_error && !cleaned_error
           EffectiveResources.send_error(e, user_id: id || 'nil')
         end
 

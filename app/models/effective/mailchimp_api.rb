@@ -123,7 +123,7 @@ module Effective
       end
     end
 
-    def list_member_add(member)
+    def list_member_add(member, preserve_status: false)
       raise('expected an Effective::MailchimpListMember') unless member.kind_of?(Effective::MailchimpListMember)
 
       Rails.logger.info "[effective_mailchimp] Add List Member" if debug?
@@ -131,13 +131,14 @@ module Effective
 
       # Actually add or update
       payload = list_member_payload(member).merge(status_if_new: (member.subscribed? ? 'subscribed' : 'unsubscribed'))
+      payload = payload.except(:status) if preserve_status
       list_id = member.mailchimp_list.mailchimp_id
       hash = subscriber_hash(member.user.email)
 
       begin
         client.lists.set_list_member(list_id, hash, payload)
       rescue MailchimpMarketing::ApiError => e
-        raise unless e.status == 400 && e.to_s.include?('Member Exists')
+        raise unless self.class.member_exists_error?(e)
 
         client.lists.update_list_member(list_id, hash, payload.except(:status_if_new))
       end
@@ -152,6 +153,37 @@ module Effective
       payload = list_member_payload(member)
       hash = member.mailchimp_id.presence || subscriber_hash(member.email)
       client.lists.update_list_member(member.mailchimp_list.mailchimp_id, hash, payload)
+    rescue MailchimpMarketing::ApiError => e
+      raise unless self.class.cleaned_member_error?(e) && hash != subscriber_hash(member.user.email)
+
+      # Cleaned addresses cannot be edited. Reuse or add the corrected address instead.
+      list_member(member.mailchimp_list, member.user.email).presence || list_member_add(member, preserve_status: true)
+    end
+
+    def self.error_body(error)
+      # The SDK stores the response body without exposing a reader.
+      body = JSON.parse(error.instance_variable_get(:@response_body).to_s)
+      body.kind_of?(Hash) ? body : {}
+    rescue JSON::ParserError
+      {}
+    end
+
+    def self.member_exists_error?(error)
+      error.status == 400 && error_body(error)['title'].to_s.casecmp?('Member Exists')
+    end
+
+    def self.compliance_error?(error)
+      error.status == 400 && error_body(error)['title'].to_s.casecmp?('Member In Compliance State')
+    end
+
+    def self.cleaned_member_error?(error)
+      return false unless error.status == 400
+
+      fields = error_body(error)['errors']
+      fields.kind_of?(Array) && fields.present? && fields.all? do |field|
+        field.kind_of?(Hash) && field['field'] == 'email address' &&
+          field['message'].to_s.match?(/\bcleaned\b/i)
+      end
     end
 
     def list_member_payload(member)
